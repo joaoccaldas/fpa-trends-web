@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FP&A Trends Intelligence | The Operator Console</title>
+    <title>FP&A Trends Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -11,71 +11,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-emerald: #00FF9F;
-            --dark-emerald: #00CC7A;
-            --deep-black: #000000;
+            --neon: #00FF9F;
+            --neon-dim: #00CC7A;
+            --bg: #000000;
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--deep-black);
-            color: #FFFFFF;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', -apple-system, sans-serif;
             overflow-x: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--neon-emerald) var(--deep-black);
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--deep-black); }
-        ::-webkit-scrollbar-thumb { background: var(--neon-emerald); border-radius: 10px; }
-        .neon-glow-text {
-            text-shadow: 0 0 10px var(--neon-emerald), 0 0 20px var(--dark-emerald);
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-        .glass-panel:hover {
-            border-color: var(--neon-emerald);
-            background: rgba(0, 255, 159, 0.05);
-        }
-        .neon-button {
-            background: var(--neon-emerald);
-            color: var(--deep-black);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 20px rgba(0, 255, 159, 0.5);
-        }
-        .neon-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(0, 255, 159, 0.8);
-            background: #FFFFFF;
-        }
-        .outline-button {
-            border: 1px solid #FFFFFF;
-            transition: all 0.3s ease;
-        }
-        .outline-button:hover {
-            border-color: var(--neon-emerald);
-            color: var(--neon-emerald);
-            box-shadow: 0 0 15px var(--neon-emerald);
-        }
-        #canvas-container {
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
+
+        /* Password Gate */
+        .gate {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at center, #001a11 0%, #000000 100%);
-        }
-        .password-gate {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: #000;
             z-index: 9999;
             display: flex;
@@ -83,571 +37,721 @@
             justify-content: center;
             transition: opacity 0.8s ease, visibility 0.8s;
         }
-        .password-gate.hidden {
+        .gate.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .gate-box {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,255,159,0.2);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .gate-box h2 {
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--neon);
+            margin-bottom: 24px;
+        }
+        .gate-box input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+            text-align: center;
+            font-size: 18px;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .gate-box input:focus { border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,159,0.3); }
+        .gate-box button {
+            width: 100%;
+            background: var(--neon);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .gate-box button:hover {
+            background: #fff;
+            box-shadow: 0 0 30px var(--neon);
+        }
+        .gate-error {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 12px;
             opacity: 0;
-            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+
+        /* Canvas */
+        #galaxy {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 28px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             pointer-events: none;
         }
-        .article-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
+        .nav > * { pointer-events: auto; }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
-        .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 40px rgba(0, 255, 159, 0.15);
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--neon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            color: #000;
+        }
+        .nav-btn {
+            border: 1px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-btn:hover {
+            border-color: var(--neon);
+            color: var(--neon);
+            box-shadow: 0 0 20px rgba(0,255,159,0.3);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 24px;
+        }
+        .hero-brand {
+            font-size: clamp(48px, 10vw, 120px);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 24px;
+            text-shadow: 0 0 40px rgba(0,255,159,0.3), 0 0 80px rgba(0,255,159,0.1);
+        }
+        .hero-sub {
+            font-size: clamp(14px, 2vw, 18px);
+            font-weight: 300;
+            color: rgba(255,255,255,0.6);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .hero-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            max-width: 540px;
+            line-height: 1.7;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+        .cta-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--neon);
+            color: #000;
+            padding: 16px 36px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 0 30px rgba(0,255,159,0.4);
+        }
+        .cta-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0,255,159,0.6);
+            background: #fff;
+        }
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: float 3s ease-in-out infinite;
+        }
+        .scroll-hint span {
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+        }
+        .scroll-hint .line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--neon), transparent);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* Data Sections */
+        .section {
+            position: relative;
+            z-index: 10;
+            padding: 100px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 48px;
+            letter-spacing: -0.02em;
+        }
+        .section-title span { color: var(--neon); }
+        .panel {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+        .panel:hover {
+            border-color: rgba(0,255,159,0.3);
+            background: rgba(0,255,159,0.03);
+        }
+        .stat-num {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--neon);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+        }
+        .bar-bg {
+            background: rgba(255,255,255,0.08);
+            border-radius: 100px;
+            height: 6px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-dim), var(--neon));
+            border-radius: 100px;
+            transition: width 1s ease;
         }
         .topic-tag {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 11px;
             font-weight: 600;
-            background: rgba(0, 255, 159, 0.15);
-            color: var(--neon-emerald);
-            border: 1px solid var(--neon-emerald);
+            letter-spacing: 0.05em;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
             cursor: pointer;
             transition: all 0.2s;
         }
         .topic-tag:hover, .topic-tag.active {
-            background: var(--neon-emerald);
+            background: var(--neon);
             color: #000;
+            border-color: var(--neon);
         }
-        .stat-card {
-            background: linear-gradient(135deg, rgba(0, 255, 159, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
-            border: 1px solid rgba(0, 255, 159, 0.2);
-        }
-        .stat-card:hover {
-            border-color: var(--neon-emerald);
-            box-shadow: 0 0 20px rgba(0, 255, 159, 0.2);
-        }
-        .search-input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+        .article-card {
+            cursor: pointer;
             transition: all 0.3s;
         }
-        .search-input:focus {
-            outline: none;
-            border-color: var(--neon-emerald);
-            box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,255,159,0.1);
         }
-        .modal-overlay {
+        .search-in {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .search-in:focus { border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,159,0.2); }
+        .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
+            inset: 0;
+            background: rgba(0,0,0,0.9);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            padding: 24px;
         }
-        .modal-overlay.active { display: flex; }
-        .modal-content {
+        .modal.active { display: flex; }
+        .modal-box {
             background: #0a0a0a;
-            border: 1px solid var(--neon-emerald);
-            border-radius: 20px;
+            border: 1px solid var(--neon);
+            border-radius: 24px;
             padding: 40px;
             max-width: 700px;
-            width: 90%;
+            width: 100%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 0 50px rgba(0, 255, 159, 0.3);
+            box-shadow: 0 0 80px rgba(0,255,159,0.2);
         }
-        .cursor-follower {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            background: var(--neon-emerald);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000;
-            mix-blend-mode: screen;
-            filter: blur(4px);
-            transition: transform 0.1s ease-out;
-            opacity: 0.5;
+        .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
         }
-        .chart-bar {
-            height: 8px;
-            background: linear-gradient(90deg, var(--dark-emerald), var(--neon-emerald));
-            border-radius: 4px;
-            transition: width 1s ease;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        .pulse { animation: pulse 2s infinite; }
+        .close-btn:hover { color: #fff; }
     </style>
 </head>
-<body class="antialiased">
-    <div class="cursor-follower" id="cursor"></div>
+<body>
 
-    <!-- Password Gate -->
-    <div class="password-gate" id="gate">
-        <div class="glass-panel p-10 text-center max-w-md w-full mx-4">
-            <div class="text-5xl mb-6">🔒</div>
-            <h2 class="text-2xl font-bold mb-4 tracking-widest neon-glow-text uppercase">Authorized Access Only</h2>
-            <p class="text-gray-400 mb-8 text-sm">Enter your operator authorization code to access the FP&A Intelligence Console.</p>
-            <input type="password" id="pass-input" class="w-full bg-black border border-gray-700 p-3 rounded-lg text-white text-center focus:border-emerald-400 outline-none transition-all mb-6 text-lg tracking-widest" placeholder="••••••••" autofocus>
-            <button onclick="verifyPass()" class="neon-button w-full py-3 rounded-lg font-bold uppercase tracking-widest">Authorize</button>
-            <p id="error-msg" class="text-red-500 mt-4 text-xs opacity-0 transition-opacity">Invalid Authorization Code</p>
+<!-- Password Gate -->
+<div class="gate" id="gate">
+    <div class="gate-box">
+        <h2>Authorized Access Only</h2>
+        <input type="password" id="passInput" placeholder="Enter code" autofocus>
+        <button onclick="checkPass()">Authorize</button>
+        <p class="gate-error" id="gateError">Invalid authorization code</p>
+    </div>
+</div>
+
+<!-- Three.js Galaxy Canvas -->
+<div id="galaxy"></div>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="logo">
+        <div class="logo-mark">F</div>
+        <span>FP&A Intelligence</span>
+    </div>
+    <div class="flex gap-3">
+        <button class="nav-btn" onclick="scrollTo('articles')">Articles</button>
+        <button class="nav-btn" onclick="scrollTo('analytics')">Analytics</button>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <h1 class="hero-brand">HELIOS</h1>
+    <p class="hero-sub">Designing the operator console for next-generation FP&A intelligence.</p>
+    <p class="hero-desc">An immersive data-driven portal synthesizing the world's most advanced financial planning and analysis trends into actionable strategic foresight. A high-fidelity operator console for the modern CFO.</p>
+    <button class="cta-main" onclick="scrollTo('articles')">
+        Access the Vault
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+
+    <div class="scroll-hint">
+        <span>Scroll to Enter</span>
+        <div class="line"></div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="section">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="panel text-center"><div class="stat-num" id="s-issues">-</div><div class="stat-label">Issues</div></div>
+        <div class="panel text-center"><div class="stat-num" id="s-articles">-</div><div class="stat-label">Articles</div></div>
+        <div class="panel text-center"><div class="stat-num" id="s-authors">-</div><div class="stat-label">Authors</div></div>
+        <div class="panel text-center"><div class="stat-num" id="s-webinars">-</div><div class="stat-label">Webinars</div></div>
+    </div>
+</section>
+
+<!-- Analytics -->
+<section class="section" id="analytics">
+    <h2 class="section-title">Topic <span>Intelligence</span></h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div class="panel">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">📊 Distribution</h3>
+            <div id="topicBars" class="space-y-4"></div>
+        </div>
+        <div class="panel">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">📈 AI Momentum</h3>
+            <div id="aiTrend" class="space-y-3"></div>
+        </div>
+    </div>
+    <div class="panel">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">👥 Top Contributors</h3>
+        <div id="authorsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </div>
+</section>
+
+<!-- Articles -->
+<section class="section" id="articles">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+        <div>
+            <h2 class="section-title mb-0">Article <span>Vault</span></h2>
+            <p class="text-sm text-gray-500 mt-1" id="countLabel">Loading...</p>
+        </div>
+        <div class="flex gap-3 w-full md:w-auto">
+            <input type="text" id="search" class="search-in" placeholder="Search...">
+            <select id="authorSel" class="search-in" style="width:auto;min-width:160px"><option value="">All Authors</option></select>
         </div>
     </div>
 
-    <div id="canvas-container"></div>
+    <div class="flex gap-2 flex-wrap mb-8">
+        <button class="topic-tag active" data-t="">All</button>
+        <button class="topic-tag" data-t="ai">AI & Automation</button>
+        <button class="topic-tag" data-t="cash">Cash Flow</button>
+        <button class="topic-tag" data-t="forecast">Forecasting</button>
+        <button class="topic-tag" data-t="data">Data & Governance</button>
+        <button class="topic-tag" data-t="transform">Transformation</button>
+    </div>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center backdrop-blur-sm bg-black/20">
+    <div id="articleGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+</section>
+
+<!-- Webinars -->
+<section class="section" id="webinars">
+    <h2 class="section-title">Upcoming <span>Webinars</span></h2>
+    <div id="webinarGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+</section>
+
+<!-- Footer -->
+<footer class="relative z-10 py-12 border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-10 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center text-black font-black text-xs">F</div>
-            <div class="text-xl font-black tracking-tighter neon-glow-text">FPA <span class="text-white">INTELLIGENCE</span></div>
+            <div class="logo-mark">F</div>
+            <span class="font-bold text-sm">FP&A Intelligence</span>
         </div>
-        <div class="flex gap-4">
-            <a href="#articles" class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Articles</a>
-            <a href="#analytics" class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Analytics</a>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="relative h-screen w-full flex flex-col items-center justify-center text-center px-6">
-        <div class="max-w-5xl z-10">
-            <div class="mb-8 inline-block px-4 py-2 rounded-full border border-emerald-400/30 bg-emerald-400/10">
-                <span class="text-emerald-400 text-xs font-bold tracking-widest uppercase">🟢 System Online — 165 Articles Analyzed</span>
-            </div>
-
-            <h1 id="main-title" class="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-6 italic">
-                <span class="text-white">THE FUTURE OF</span><br>
-                <span class="neon-glow-text">STRATEGIC FINANCE</span>
-            </h1>
-
-            <p id="subtitle" class="text-lg md:text-xl font-light text-gray-300 mb-8 tracking-wide max-w-2xl mx-auto opacity-0">
-                An agentic intelligence portal synthesizing the world's most advanced FP&A trends into actionable foresight.
-            </p>
-
-            <div id="hero-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12 opacity-0">
-                <div class="stat-card glass-panel p-4 rounded-xl">
-                    <div class="text-3xl font-black text-emerald-400" id="stat-issues">-</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-widest">Issues</div>
-                </div>
-                <div class="stat-card glass-panel p-4 rounded-xl">
-                    <div class="text-3xl font-black text-emerald-400" id="stat-articles">-</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-widest">Articles</div>
-                </div>
-                <div class="stat-card glass-panel p-4 rounded-xl">
-                    <div class="text-3xl font-black text-emerald-400" id="stat-authors">-</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-widest">Authors</div>
-                </div>
-                <div class="stat-card glass-panel p-4 rounded-xl">
-                    <div class="text-3xl font-black text-emerald-400" id="stat-webinars">-</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-widest">Webinars</div>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
-                <button onclick="document.getElementById('articles').scrollIntoView({behavior: 'smooth'})" class="neon-button px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm flex items-center gap-3">
-                    Access the Vault <span class="text-lg">→</span>
-                </button>
-                <button onclick="document.getElementById('analytics').scrollIntoView({behavior: 'smooth'})" class="outline-button px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm">
-                    View Analytics
-                </button>
-            </div>
-        </div>
-
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
-            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 pulse">Scroll to Enter</p>
-            <div class="w-px h-12 bg-gradient-to-b from-emerald-400 to-transparent mx-auto mt-2"></div>
-        </div>
-    </section>
-
-    <!-- Analytics Section -->
-    <section id="analytics" class="relative z-10 px-8 py-24">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold mb-12 text-center">Topic <span class="text-emerald-400">Intelligence</span></h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                <div class="glass-panel p-8">
-                    <h3 class="text-xl font-bold mb-6 text-emerald-400">📊 Topic Distribution</h3>
-                    <div id="topic-bars" class="space-y-4">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-
-                <div class="glass-panel p-8">
-                    <h3 class="text-xl font-bold mb-6 text-emerald-400">📈 AI Trend (Recent Issues)</h3>
-                    <div id="ai-trend-chart" class="space-y-3">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-panel p-8">
-                <h3 class="text-xl font-bold mb-6 text-emerald-400">👥 Top Contributors</h3>
-                <div id="authors-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Articles Section -->
-    <section id="articles" class="relative z-10 px-8 py-24">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-                <div>
-                    <h2 class="text-4xl font-bold mb-2">Article <span class="text-emerald-400">Vault</span></h2>
-                    <p class="text-gray-400" id="article-count">Loading...</p>
-                </div>
-                <div class="flex gap-3 flex-wrap">
-                    <input type="text" id="search" class="search-input px-4 py-3 rounded-lg w-full md:w-64" placeholder="Search articles...">
-                    <select id="author-filter" class="search-input px-4 py-3 rounded-lg">
-                        <option value="">All Authors</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex gap-2 flex-wrap mb-8">
-                <button class="topic-tag active" data-topic="">All</button>
-                <button class="topic-tag" data-topic="ai">AI & Automation</button>
-                <button class="topic-tag" data-topic="cash">Cash Flow</button>
-                <button class="topic-tag" data-topic="forecast">Forecasting</button>
-                <button class="topic-tag" data-topic="data">Data & Governance</button>
-                <button class="topic-tag" data-topic="transform">Transformation</button>
-            </div>
-
-            <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Filled by JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Webinars Section -->
-    <section id="webinars" class="relative z-10 px-8 py-24">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold mb-12 text-center">Upcoming <span class="text-emerald-400">Webinars</span></h2>
-            <div id="webinars-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Filled by JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="relative z-10 px-8 py-12 border-t border-gray-800">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center text-black font-black text-xs">F</div>
-                <div class="font-bold">FP&A Trends Intelligence</div>
-            </div>
-            <div class="text-gray-500 text-sm">© 2026 — Powered by Nova Intelligence Systems</div>
-            <div class="text-gray-500 text-sm">39 Issues • 165 Articles • 76 Authors</div>
-        </div>
-    </footer>
-
-    <!-- Article Modal -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal-content">
-            <button onclick="closeModal()" class="float-right text-gray-500 hover:text-white text-2xl">&times;</button>
-            <div id="modal-body"></div>
-        </div>
+        <p class="text-xs text-white/30">© 2026 — Nova Intelligence Systems</p>
     </div>
+</footer>
 
-    <script>
-        // ===== PASSWORD PROTECTION =====
-        const CORRECT_PASS = "Nova2026";
-        let data = null;
-        let currentTopic = '';
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <div id="modalBody"></div>
+    </div>
+</div>
 
-        function verifyPass() {
-            const input = document.getElementById('pass-input').value;
-            const msg = document.getElementById('error-msg');
-            if (input === CORRECT_PASS) {
-                document.getElementById('gate').classList.add('hidden');
-                loadData();
-                initAnimations();
-            } else {
-                msg.style.opacity = '1';
-                setTimeout(() => msg.style.opacity = '0', 2000);
-            }
-        }
+<script>
+// ===== PASSWORD =====
+const PASS = "Nova2026";
+function checkPass() {
+    if (document.getElementById('passInput').value === PASS) {
+        document.getElementById('gate').classList.add('hidden');
+        loadData();
+        animateHero();
+    } else {
+        const err = document.getElementById('gateError');
+        err.style.opacity = '1';
+        setTimeout(() => err.style.opacity = '0', 2000);
+    }
+}
+document.getElementById('passInput').addEventListener('keypress', e => { if(e.key==='Enter') checkPass(); });
 
-        // Enter key
-        document.getElementById('pass-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') verifyPass();
+// ===== THREE.JS GALAXY =====
+let scene, camera, renderer, galaxy;
+
+function initGalaxy() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('galaxy').appendChild(renderer.domElement);
+
+    // Galaxy parameters
+    const count = 15000;
+    const arms = 5;
+    const armSpread = 0.5;
+    const radius = 12;
+    const spin = 2.5;
+    const bulge = 0.4;
+    const randomness = 0.4;
+
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+
+    const colorInside = new THREE.Color('#00FF9F');
+    const colorOutside = new THREE.Color('#003322');
+
+    for (let i = 0; i < count; i++) {
+        const i3 = i * 3;
+        const r = Math.random() * radius;
+        const armAngle = (i % arms) / arms * Math.PI * 2;
+        const spinAngle = r * spin;
+        const angle = armAngle + spinAngle + (Math.random() - 0.5) * armSpread;
+        const x = Math.cos(angle) * r + (Math.random() - 0.5) * randomness * r;
+        const z = Math.sin(angle) * r + (Math.random() - 0.5) * randomness * r;
+        const y = (Math.random() - 0.5) * bulge * r + (Math.random() - 0.5) * 0.5;
+
+        positions[i3] = x;
+        positions[i3 + 1] = y;
+        positions[i3 + 2] = z;
+
+        const mixedColor = colorInside.clone().lerp(colorOutside, r / radius);
+        colors[i3] = mixedColor.r;
+        colors[i3 + 1] = mixedColor.g;
+        colors[i3 + 2] = mixedColor.b;
+
+        sizes[i] = Math.random() * 2;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+        size: 0.08,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+    });
+
+    galaxy = new THREE.Points(geometry, material);
+    scene.add(galaxy);
+    camera.position.z = 18;
+    camera.position.y = 4;
+    camera.lookAt(0, 0, 0);
+}
+
+let mouseX = 0, mouseY = 0;
+window.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function animateGalaxy() {
+    requestAnimationFrame(animateGalaxy);
+    const time = Date.now() * 0.0003;
+    galaxy.rotation.y = time * 0.3;
+    galaxy.rotation.z = Math.sin(time * 0.1) * 0.05;
+
+    // Mouse parallax
+    camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+    camera.position.y += (4 + mouseY * 1 - camera.position.y) * 0.02;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+initGalaxy();
+animateGalaxy();
+
+// ===== GSAP =====
+function animateHero() {
+    gsap.to('.hero-brand', { opacity: 1, scale: 1, duration: 1.5, ease: 'expo.out', delay: 0.2 });
+    gsap.to('.hero-sub', { opacity: 1, y: 0, duration: 1, delay: 0.6 });
+    gsap.to('.hero-desc', { opacity: 1, y: 0, duration: 1, delay: 0.8 });
+    gsap.to('.cta-main', { opacity: 1, y: 0, duration: 1, delay: 1 });
+
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.utils.toArray('.panel').forEach((el, i) => {
+        gsap.from(el, {
+            scrollTrigger: { trigger: el, start: 'top 85%' },
+            y: 40, opacity: 0, duration: 0.8, delay: i * 0.1
         });
+    });
+}
 
-        // ===== DATA LOADING =====
-        async function loadData() {
-            try {
-                const res = await fetch('data.json');
-                data = await res.json();
-                renderDashboard();
-            } catch (e) {
-                console.error('Failed to load data:', e);
-                document.getElementById('articles-grid').innerHTML = '<div class="text-red-400">Failed to load data. Please check data.json file.</div>';
-            }
-        }
+// ===== DATA =====
+let DATA = null, currentTopic = '';
 
-        function renderDashboard() {
-            if (!data) return;
+async function loadData() {
+    const res = await fetch('data.json');
+    DATA = await res.json();
+    renderAll();
+}
 
-            // Stats
-            document.getElementById('stat-issues').textContent = data.stats.issues;
-            document.getElementById('stat-articles').textContent = data.stats.articles;
-            document.getElementById('stat-authors').textContent = data.stats.authors;
-            document.getElementById('stat-webinars').textContent = data.stats.webinars;
+function renderAll() {
+    // Stats
+    document.getElementById('s-issues').textContent = DATA.stats.issues;
+    document.getElementById('s-articles').textContent = DATA.stats.articles;
+    document.getElementById('s-authors').textContent = DATA.stats.authors;
+    document.getElementById('s-webinars').textContent = DATA.stats.webinars;
 
-            // Topic bars
-            const topicsDiv = document.getElementById('topic-bars');
-            const maxTopic = Math.max(...Object.values(data.topics));
-            topicsDiv.innerHTML = Object.entries(data.topics)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 8)
-                .map(([topic, count]) => `
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-400 w-32 truncate">${topic}</span>
-                        <div class="flex-1 bg-gray-800 rounded-full h-2">
-                            <div class="chart-bar" style="width: ${(count/maxTopic)*100}%"></div>
-                        </div>
-                        <span class="text-xs text-emerald-400 font-bold">${count}</span>
-                    </div>
-                `).join('');
+    // Topic bars
+    const maxT = Math.max(...Object.values(DATA.topics));
+    document.getElementById('topicBars').innerHTML = Object.entries(DATA.topics)
+        .sort((a,b) => b[1]-a[1])
+        .slice(0,8)
+        .map(([t,c]) => `
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 w-36 truncate">${t}</span>
+                <div class="flex-1 bar-bg"><div class="bar-fill" style="width:${(c/maxT)*100}%"></div></div>
+                <span class="text-xs text-emerald-400 font-bold w-8 text-right">${c}</span>
+            </div>
+        `).join('');
 
-            // AI trend
-            const trendDiv = document.getElementById('ai-trend-chart');
-            const maxTrend = Math.max(...Object.values(data.ai_trend));
-            trendDiv.innerHTML = Object.entries(data.ai_trend)
-                .map(([issue, count]) => `
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-400 w-16">#${issue}</span>
-                        <div class="flex-1 bg-gray-800 rounded-full h-2">
-                            <div class="chart-bar" style="width: ${(count/Math.max(maxTrend,1))*100}%"></div>
-                        </div>
-                        <span class="text-xs text-emerald-400 font-bold">${count}</span>
-                    </div>
-                `).join('');
+    // AI trend
+    const maxA = Math.max(...Object.values(DATA.ai_trend));
+    document.getElementById('aiTrend').innerHTML = Object.entries(DATA.ai_trend)
+        .map(([i,c]) => `
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 w-12">#${i}</span>
+                <div class="flex-1 bar-bg"><div class="bar-fill" style="width:${(c/Math.max(maxA,1))*100}%"></div></div>
+                <span class="text-xs text-emerald-400 font-bold w-6 text-right">${c}</span>
+            </div>
+        `).join('');
 
-            // Authors
-            const authorsDiv = document.getElementById('authors-grid');
-            authorsDiv.innerHTML = data.authors.slice(0, 8).map(author => `
-                <div class="glass-panel p-4 text-center cursor-pointer hover:border-emerald-400" onclick="filterByAuthor('${author.name}')">
-                    <div class="text-xl font-black text-emerald-400">${author.count}</div>
-                    <div class="text-xs text-gray-400 mt-1">${author.name}</div>
-                </div>
-            `).join('');
+    // Authors
+    document.getElementById('authorsGrid').innerHTML = DATA.authors.slice(0,8).map(a => `
+        <div class="panel text-center cursor-pointer hover:border-emerald-400" onclick="filterAuthor('${a.name}')">
+            <div class="text-2xl font-black text-emerald-400">${a.count}</div>
+            <div class="text-xs text-gray-400 mt-1">${a.name}</div>
+        </div>
+    `).join('');
 
-            // Author filter options
-            const authorFilter = document.getElementById('author-filter');
-            data.authors.forEach(author => {
-                const opt = document.createElement('option');
-                opt.value = author.name;
-                opt.textContent = `${author.name} (${author.count})`;
-                authorFilter.appendChild(opt);
-            });
+    // Author select
+    DATA.authors.forEach(a => {
+        const o = document.createElement('option');
+        o.value = a.name;
+        o.textContent = `${a.name} (${a.count})`;
+        document.getElementById('authorSel').appendChild(o);
+    });
 
-            // Articles
-            renderArticles(data.articles);
+    renderArticles(DATA.articles);
 
-            // Webinars
-            const webinarsDiv = document.getElementById('webinars-grid');
-            webinarsDiv.innerHTML = data.webinars.slice(0, 4).map(w => `
-                <div class="glass-panel p-6">
-                    <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">${w.date} | Issue #${w.issue_number}</div>
-                    <h4 class="font-bold mb-2">${w.title}</h4>
-                    <p class="text-sm text-gray-400 mb-4">${w.description ? w.description.substring(0, 120) + '...' : ''}</p>
-                    ${w.url ? `<a href="${w.url}" target="_blank" class="text-emerald-400 text-sm hover:underline">Register →</a>` : ''}
-                </div>
-            `).join('');
+    // Webinars
+    document.getElementById('webinarGrid').innerHTML = DATA.webinars.slice(0,4).map(w => `
+        <div class="panel">
+            <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">${w.date} | Issue #${w.issue_number}</div>
+            <h4 class="font-bold mb-2">${w.title}</h4>
+            <p class="text-sm text-gray-400 mb-3">${w.description ? w.description.substring(0,120)+'...' : ''}</p>
+            ${w.url ? `<a href="${w.url}" target="_blank" class="text-emerald-400 text-sm hover:underline">Register →</a>` : ''}
+        </div>
+    `).join('');
 
-            // Search
-            document.getElementById('search').addEventListener('input', filterArticles);
-            document.getElementById('author-filter').addEventListener('change', filterArticles);
-            document.querySelectorAll('.topic-tag').forEach(tag => {
-                tag.addEventListener('click', () => {
-                    document.querySelectorAll('.topic-tag').forEach(t => t.classList.remove('active'));
-                    tag.classList.add('active');
-                    currentTopic = tag.dataset.topic;
-                    filterArticles();
-                });
-            });
-        }
-
-        function renderArticles(articles) {
-            const grid = document.getElementById('articles-grid');
-            document.getElementById('article-count').textContent = `${articles.length} articles found`;
-
-            if (articles.length === 0) {
-                grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-12">No articles found</div>';
-                return;
-            }
-
-            grid.innerHTML = articles.slice(0, 12).map(article => `
-                <div class="article-card glass-panel p-6" onclick="showArticle(${article.id})">
-                    <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${article.issue_number} — ${article.date}</div>
-                    <h3 class="font-bold mb-2 text-lg">${article.title}</h3>
-                    <p class="text-sm text-gray-400 mb-3">${article.author || 'Unknown'} ${article.author_title ? `— ${article.author_title}` : ''}</p>
-                    <p class="text-sm text-gray-500 line-clamp-3">${article.summary ? article.summary.substring(0, 150) + '...' : ''}</p>
-                    <div class="flex gap-2 mt-4">
-                        ${article.category ? `<span class="text-xs px-2 py-1 rounded bg-gray-800 text-gray-400">${article.category}</span>` : ''}
-                        ${article.url ? `<a href="${article.url}" target="_blank" class="text-emerald-400 text-xs hover:underline ml-auto">Read →</a>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterArticles() {
-            if (!data) return;
-            const search = document.getElementById('search').value.toLowerCase();
-            const author = document.getElementById('author-filter').value;
-
-            let filtered = data.articles;
-
-            if (search) {
-                filtered = filtered.filter(a =>
-                    (a.title + ' ' + (a.summary || '') + ' ' + (a.author || '')).toLowerCase().includes(search)
-                );
-            }
-
-            if (author) {
-                filtered = filtered.filter(a => a.author === author);
-            }
-
-            if (currentTopic) {
-                const keywords = {
-                    'ai': ['ai', 'artificial intelligence', 'agentic', 'machine learning', 'automation'],
-                    'cash': ['cash', 'treasury', 'liquidity', 'working capital'],
-                    'forecast': ['forecast', 'forecasting', 'prediction', 'scenario'],
-                    'data': ['data', 'governance', 'framework', 'control'],
-                    'transform': ['transformation', 'change', 'agility', 'digital']
-                };
-                const kws = keywords[currentTopic] || [];
-                filtered = filtered.filter(a => {
-                    const text = (a.title + ' ' + (a.summary || '')).toLowerCase();
-                    return kws.some(kw => text.includes(kw));
-                });
-            }
-
-            renderArticles(filtered);
-        }
-
-        function filterByAuthor(name) {
-            document.getElementById('author-filter').value = name;
-            filterArticles();
-            document.getElementById('articles').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function showArticle(id) {
-            const article = data.articles.find(a => a.id === id);
-            if (!article) return;
-
-            document.getElementById('modal-body').innerHTML = `
-                <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${article.issue_number} — ${article.date}</div>
-                <h2 class="text-2xl font-bold mb-4">${article.title}</h2>
-                <p class="text-gray-400 mb-4"><strong>Author:</strong> ${article.author || 'Unknown'} ${article.author_title ? `(${article.author_title})` : ''}</p>
-                <p class="text-gray-400 mb-4"><strong>Category:</strong> ${article.category || 'N/A'}</p>
-                <hr class="border-gray-800 mb-4">
-                <p class="text-gray-300 leading-relaxed mb-6">${article.summary || 'No summary available.'}</p>
-                ${article.url ? `<a href="${article.url}" target="_blank" class="neon-button px-6 py-3 rounded-lg font-bold inline-block">Read Full Article →</a>` : ''}
-            `;
-
-            document.getElementById('modal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        // ===== THREE.JS VORTEX =====
-        let scene, camera, renderer, particleSystem;
-
-        function initThree() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(8000 * 3);
-            const colors = new Float32Array(8000 * 3);
-
-            for (let i = 0; i < 8000; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = Math.random() * 10 + 2;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                const y = (Math.random() - 0.5) * 5;
-
-                positions[i * 3] = x;
-                positions[i * 3 + 1] = y;
-                positions[i * 3 + 2] = z;
-
-                const color = new THREE.Color();
-                color.setHSL(0.45, 0.8, 0.5 + Math.random() * 0.3);
-                colors[i * 3] = color.r;
-                colors[i * 3 + 1] = color.g;
-                colors[i * 3 + 2] = color.b;
-            }
-
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 0.03,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending
-            });
-
-            particleSystem = new THREE.Points(geometry, material);
-            scene.add(particleSystem);
-            camera.position.z = 15;
-            camera.position.y = 2;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            particleSystem.rotation.y += 0.002;
-            particleSystem.rotation.z += 0.001;
-            const time = Date.now() * 0.001;
-            particleSystem.scale.setScalar(1 + Math.sin(time) * 0.05);
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+    // Events
+    document.getElementById('search').addEventListener('input', filterAll);
+    document.getElementById('authorSel').addEventListener('change', filterAll);
+    document.querySelectorAll('.topic-tag').forEach(t => {
+        t.addEventListener('click', () => {
+            document.querySelectorAll('.topic-tag').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            currentTopic = t.dataset.t;
+            filterAll();
         });
+    });
+}
 
-        window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth) - 0.5;
-            const y = (e.clientY / window.innerHeight) - 0.5;
-            gsap.to(camera.position, { x: x * 2, y: 2 - (y * 2), duration: 1, ease: 'power2.out' });
-        });
+function renderArticles(list) {
+    const g = document.getElementById('articleGrid');
+    document.getElementById('countLabel').textContent = `${list.length} articles`;
+    g.innerHTML = list.slice(0,12).map(a => `
+        <div class="article-card panel" onclick="showModal(${a.id})">
+            <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
+            <h3 class="font-bold mb-2">${a.title}</h3>
+            <p class="text-xs text-gray-400">${a.author||'Unknown'} ${a.author_title?`— ${a.author_title}`:''}</p>
+            <p class="text-sm text-gray-500 mt-2 line-clamp-2">${a.summary?a.summary.substring(0,140)+'...':''}</p>
+        </div>
+    `).join('');
+}
 
-        // ===== GSAP ANIMATIONS =====
-        function initAnimations() {
-            gsap.to('#subtitle', { opacity: 1, duration: 1, delay: 0.5 });
-            gsap.to('#hero-stats', { opacity: 1, y: 0, duration: 1, delay: 0.8 });
-            gsap.from('#main-title', { scale: 0.9, opacity: 0, duration: 1.5, ease: 'expo.out' });
+function filterAll() {
+    let f = DATA.articles;
+    const s = document.getElementById('search').value.toLowerCase();
+    const a = document.getElementById('authorSel').value;
+    if (s) f = f.filter(x => (x.title+' '+(x.summary||'')+' '+(x.author||'')).toLowerCase().includes(s));
+    if (a) f = f.filter(x => x.author === a);
+    if (currentTopic) {
+        const k = {ai:['ai','artificial intelligence','agentic','machine learning','automation'],cash:['cash','treasury','liquidity'],forecast:['forecast','forecasting','prediction'],data:['data','governance','framework'],transform:['transformation','change','agility']};
+        const kw = k[currentTopic]||[];
+        f = f.filter(x => kw.some(w => (x.title+' '+(x.summary||'')).toLowerCase().includes(w)));
+    }
+    renderArticles(f);
+}
 
-            gsap.registerPlugin(ScrollTrigger);
-            gsap.utils.toArray('.glass-panel').forEach((panel, i) => {
-                gsap.from(panel, {
-                    scrollTrigger: { trigger: panel, start: 'top 85%' },
-                    y: 50, opacity: 0, duration: 0.8, delay: i * 0.1
-                });
-            });
-        }
+function filterAuthor(name) {
+    document.getElementById('authorSel').value = name;
+    filterAll();
+    scrollTo('articles');
+}
 
-        // ===== CURSOR FOLLOWER =====
-        const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => {
-            gsap.to(cursor, { x: e.clientX - 10, y: e.clientY - 10, duration: 0.2, ease: 'power2.out' });
-        });
+function showModal(id) {
+    const a = DATA.articles.find(x => x.id === id);
+    if (!a) return;
+    document.getElementById('modalBody').innerHTML = `
+        <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
+        <h2 class="text-2xl font-bold mb-4">${a.title}</h2>
+        <p class="text-gray-400 mb-2"><strong>Author:</strong> ${a.author||'Unknown'} ${a.author_title?`(${a.author_title})`:''}</p>
+        <hr class="border-gray-800 my-4">
+        <p class="text-gray-300 leading-relaxed mb-6">${a.summary||'No summary.'}</p>
+        ${a.url?`<a href="${a.url}" target="_blank" class="cta-main inline-block text-sm">Read Full Article →</a>`:''}
+    `;
+    document.getElementById('modal').classList.add('active');
+}
 
-        // ===== INIT =====
-        initThree();
-        animate();
-    </script>
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+function scrollTo(id) { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+document.getElementById('modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+// Start
+animateHero();
+</script>
 </body>
 </html>
