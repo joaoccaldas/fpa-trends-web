@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FP&A Trends Intelligence | The Operator Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-emerald: #00FF9F;
+            --dark-emerald: #00CC7A;
+            --deep-black: #000000;
+        }
+        body {
+            background-color: var(--deep-black);
+            color: #FFFFFF;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-emerald) var(--deep-black);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--deep-black); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-emerald); border-radius: 10px; }
+
+        .neon-glow-text {
+            text-shadow: 0 0 10px var(--neon-emerald), 0 0 20px var(--dark-emerald);
+        }
+        .neon-border {
+            border: 1px solid var(--neon-emerald);
+            box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+        }
+        .neon-button {
+            background: var(--neon-emerald);
+            color: var(--deep-black);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.5);
+        }
+        .neon-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 255, 159, 0.8);
+            background: #FFFFFF;
+        }
+        .outline-button {
+            border: 1px solid #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        .outline-button:hover {
+            border-color: var(--neon-emerald);
+            color: var(--neon-emerald);
+            box-shadow: 0 0 15px var(--neon-emerald);
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #001a11 0%, #000000 100%);
+        }
+        .password-gate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .password-gate.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+        .cursor-follower {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--neon-emerald);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: screen;
+            filter: blur(4px);
+            transition: transform 0.1s ease-out;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-follower" id="cursor"></div>
+
+    <!-- Password Gate -->
+    <div class="password-gate" id="gate">
+        <div class="glass-panel p-10 text-center max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6 tracking-widest neon-glow-text">ACCESS RESTRICTED</h2>
+            <p class="text-gray-400 mb-8 text-sm">Please enter the operator authorization code to proceed.</p>
+            <input type="password" id="pass-input" class="w-full bg-black border border-gray-700 p-3 rounded-lg text-white text-center focus:border-emerald-400 outline-none transition-all mb-6" placeholder="••••••••">
+            <button onclick="verifyPass()" class="neon-button w-full py-3 rounded-lg font-bold uppercase tracking-widest">Authorize</button>
+            <p id="error-msg" class="text-red-500 mt-4 text-xs opacity-0 transition-opacity">Invalid Authorization Code</p>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center">
+        <div class="text-xl font-black tracking-tighter neon-glow-text">FPA <span class="text-white">INTELLIGENCE</span></div>
+        <button class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">View our work</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen w-full flex flex-col items-center justify-center text-center px-6">
+        <div class="max-w-5xl">
+            <h1 id="main-title" class="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-6 neon-glow-text italic">
+                FP&A TRENDS<br><span class="text-white not-italic">INTELLIGENCE</span>
+            </h1>
+            <p id="subtitle" class="text-lg md:text-xl font-light text-gray-300 mb-8 tracking-wide opacity-0 translate-y-4 transition-all duration-1000">
+                Decoding the future of strategic finance through agentic intelligence.
+            </p>
+            <p id="desc" class="max-w-2xl mx-auto text-gray-500 font-light text-sm md:text-base mb-12 opacity-0 translate-y-4 transition-all duration-1000">
+                An immersive data-driven portal synthesizing the world's most advanced financial planning and analysis trends into actionable strategic foresight. A high-fidelity operator console for the modern CFO.
+            </p>
+            
+            <div class="flex flex-col items-center gap-8">
+                <button class="neon-button px-10 py-4 rounded-full font-black uppercase tracking-widest text-sm flex items-center gap-3">
+                    Access the Vault <span class="text-lg">→</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 animate-bounce">Scroll to Enter</p>
+            <div class="w-px h-12 bg-gradient-to-b from-emerald-400 to-transparent mx-auto mt-2"></div>
+        </div>
+    </section>
+
+    <!-- Content Section (Example) -->
+    <section class="min-h-screen relative z-10 px-8 py-24">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+            <div class="space-y-8">
+                <h2 class="text-4xl font-bold tracking-tight">The New <span class="text-emerald-400">Operator Console</span></h2>
+                <p class="text-gray-400 leading-relaxed font-light">
+                    We are moving beyond spreadsheets and static reports. The future of FP&A is a live, agentic ecosystem that doesn't just report data, but interprets it in real-time, projecting future states with surgical precision.
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-panel p-6">
+                        <div class="text-emerald-400 font-bold text-2xl mb-2">165+</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-widest">Synthesized Articles</div>
+                    </div>
+                    <div class="glass-panel p-6">
+                        <div class="text-emerald-400 font-bold text-2xl mb-2">39</div>
+                        <div class="text-xs text-gray-500 uppercase tracking-widest">Analyzed Issues</div>
+                    </div>
+                </div>
+            </div>
+            <div class="relative group">
+                <div class="absolute -inset-4 bg-emerald-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="glass-panel aspect-square flex items-center justify-center relative overflow-hidden">
+                    <div class="text-emerald-400 text-6xl font-black opacity-20 absolute">DATA</div>
+                    <div class="z-10 text-center p-12">
+                        <p class="text-sm font-mono text-emerald-400 mb-4">[SYSTEM_ACTIVE]</p>
+                        <p class="text-white italic font-light">"The goal is no longer to predict the future, but to design the systems that make the future predictable."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- SECURITY GATE ---
+        const CORRECT_PASS = "Nova2026"; // Change this to your desired password
+        function verifyPass() {
+            const input = document.getElementById('pass-input').value;
+            const msg = document.getElementById('error-msg');
+            if (input === CORRECT_PASS) {
+                document.getElementById('gate').classList.add('hidden');
+                initAnimations();
+            } else {
+                msg.style.opacity = '1';
+                setTimeout(() => msg.style.opacity = '0', 2000);
+            }
+        }
+
+        // --- THREE.JS VORTEX ---
+        let scene, camera, renderer, particles, particleSystem;
+        const PARTICLE_COUNT = 8000;
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(PARTICLE_COUNT * 3);
+            const colors = new Float32Array(PARTICLE_COUNT * 3);
+            const sizes = new Float32Array(PARTICLE_COUNT);
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                // Spiral/Vortex Distribution
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 10 + 2;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                const y = (Math.random() - 0.5) * 5;
+
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = y;
+                positions[i * 3 + 2] = z;
+
+                // Emerald glow palette
+                const color = new THREE.Color();
+                color.setHSL(0.45, 0.8, 0.5 + Math.random() * 0.3);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+
+                sizes[i] = Math.random() * 2;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.03,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+
+            camera.position.z = 15;
+            camera.position.y = 2;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Hypnotic Vortex Rotation
+            particleSystem.rotation.y += 0.002;
+            particleSystem.rotation.z += 0.001;
+
+            // Subtle pulse
+            const time = Date.now() * 0.001;
+            particleSystem.scale.setScalar(1 + Math.sin(time) * 0.05);
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Interaction: Parallax movement
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) - 0.5;
+            const y = (e.clientY / window.innerHeight) - 0.5;
+            gsap.to(camera.position, {
+                x: x * 2,
+                y: 2 - (y * 2),
+                duration: 1,
+                ease: 'power2.out'
+            });
+        });
+
+        // --- GSAP ANIMATIONS ---
+        function initAnimations() {
+            gsap.to('#subtitle', { opacity: 1, y: 0, duration: 1, delay: 0.5 });
+            gsap.to('#desc', { opacity: 1, y: 0, duration: 1, delay: 0.8 });
+            gsap.from('#main-title', { scale: 0.9, opacity: 0, duration: 1.5, ease: 'expo.out' });
+
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.to('.glass-panel', {
+                scrollTrigger: {
+                    trigger: '.glass-panel',
+                    start: 'top 80%',
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                stagger: 0.2
+            });
+        }
+
+        // --- CURSOR FOLLOWER ---
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX - 10,
+                y: e.clientY - 10,
+                duration: 0.2,
+                ease: 'power2.out'
+            });
+        });
+
+        // Start
+        initThree();
+        animate();
+    </script>
+</body>
+</html>
