@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FP&A Trends Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -15,12 +15,14 @@
             --neon-dim: #00CC7A;
             --bg: #000000;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
         body {
             background: var(--bg);
             color: #fff;
             font-family: 'Inter', -apple-system, sans-serif;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #000; }
@@ -43,17 +45,17 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0,255,159,0.2);
             border-radius: 24px;
-            padding: 48px;
-            max-width: 400px;
+            padding: 40px 32px;
+            max-width: 360px;
             width: 90%;
             text-align: center;
         }
         .gate-box h2 {
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: var(--neon);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .gate-box input {
             width: 100%;
@@ -65,9 +67,10 @@
             text-align: center;
             font-size: 18px;
             letter-spacing: 0.15em;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             outline: none;
             transition: all 0.3s;
+            -webkit-appearance: none;
         }
         .gate-box input:focus { border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,159,0.3); }
         .gate-box button {
@@ -83,24 +86,27 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.3s;
+            -webkit-appearance: none;
         }
-        .gate-box button:hover {
-            background: #fff;
-            box-shadow: 0 0 30px var(--neon);
-        }
+        .gate-box button:hover { background: #fff; box-shadow: 0 0 30px var(--neon); }
+        .gate-box button:active { transform: scale(0.98); }
         .gate-error {
             color: #ff4444;
             font-size: 12px;
-            margin-top: 12px;
+            margin-top: 10px;
             opacity: 0;
             transition: opacity 0.3s;
         }
 
-        /* Canvas */
+        /* Galaxy Canvas - CRITICAL FIX: pointer-events none so clicks pass through */
         #galaxy {
             position: fixed;
             inset: 0;
             z-index: 0;
+            pointer-events: none !important;
+        }
+        #galaxy canvas {
+            pointer-events: none !important;
         }
 
         /* Navigation */
@@ -110,46 +116,49 @@
             left: 0;
             right: 0;
             z-index: 100;
-            padding: 28px 40px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
             pointer-events: none;
         }
         .nav > * { pointer-events: auto; }
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 0.15em;
+            font-size: 12px;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
         }
         .logo-mark {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: var(--neon);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 900;
             color: #000;
+            flex-shrink: 0;
         }
         .nav-btn {
             border: 1px solid rgba(255,255,255,0.3);
             background: transparent;
             color: #fff;
-            padding: 10px 24px;
+            padding: 8px 16px;
             border-radius: 100px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.3s;
+            white-space: nowrap;
         }
         .nav-btn:hover {
             border-color: var(--neon);
@@ -162,46 +171,51 @@
             position: relative;
             z-index: 10;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 0 24px;
+            padding: 80px 20px 100px;
+            pointer-events: none;
         }
+        .hero > * { pointer-events: auto; }
         .hero-brand {
-            font-size: clamp(48px, 10vw, 120px);
+            font-size: clamp(36px, 12vw, 100px);
             font-weight: 900;
             letter-spacing: -0.03em;
             line-height: 1;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             text-shadow: 0 0 40px rgba(0,255,159,0.3), 0 0 80px rgba(0,255,159,0.1);
         }
         .hero-sub {
-            font-size: clamp(14px, 2vw, 18px);
+            font-size: clamp(13px, 2.5vw, 17px);
             font-weight: 300;
             color: rgba(255,255,255,0.6);
-            max-width: 500px;
+            max-width: 460px;
             line-height: 1.6;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            padding: 0 10px;
         }
         .hero-desc {
-            font-size: 13px;
+            font-size: 12px;
             color: rgba(255,255,255,0.4);
-            max-width: 540px;
+            max-width: 480px;
             line-height: 1.7;
             font-weight: 300;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
+            padding: 0 10px;
         }
         .cta-main {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: var(--neon);
             color: #000;
-            padding: 16px 36px;
+            padding: 14px 28px;
             border-radius: 100px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.15em;
             text-transform: uppercase;
@@ -209,83 +223,99 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
             box-shadow: 0 0 30px rgba(0,255,159,0.4);
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .cta-main:hover {
             transform: scale(1.05);
             box-shadow: 0 0 50px rgba(0,255,159,0.6);
             background: #fff;
         }
+        .cta-main:active { transform: scale(0.96); }
         .scroll-hint {
             position: absolute;
-            bottom: 40px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             animation: float 3s ease-in-out infinite;
+            pointer-events: none;
         }
         .scroll-hint span {
-            font-size: 10px;
+            font-size: 9px;
             letter-spacing: 0.3em;
             text-transform: uppercase;
             color: rgba(255,255,255,0.3);
         }
         .scroll-hint .line {
             width: 1px;
-            height: 40px;
+            height: 32px;
             background: linear-gradient(to bottom, var(--neon), transparent);
         }
         @keyframes float {
             0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
+            50% { transform: translateX(-50%) translateY(-8px); }
         }
 
         /* Data Sections */
         .section {
             position: relative;
             z-index: 10;
-            padding: 100px 40px;
+            padding: 60px 16px;
             max-width: 1200px;
             margin: 0 auto;
         }
+        @media (min-width: 768px) {
+            .section { padding: 100px 40px; }
+        }
         .section-title {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 700;
-            margin-bottom: 48px;
+            margin-bottom: 32px;
             letter-spacing: -0.02em;
+        }
+        @media (min-width: 768px) {
+            .section-title { font-size: 32px; margin-bottom: 48px; }
         }
         .section-title span { color: var(--neon); }
         .panel {
             background: rgba(255,255,255,0.02);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 32px;
+            border-radius: 16px;
+            padding: 20px;
             transition: all 0.3s;
+        }
+        @media (min-width: 768px) {
+            .panel { border-radius: 20px; padding: 32px; }
         }
         .panel:hover {
             border-color: rgba(0,255,159,0.3);
             background: rgba(0,255,159,0.03);
         }
         .stat-num {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 900;
             color: var(--neon);
             line-height: 1;
         }
+        @media (min-width: 768px) {
+            .stat-num { font-size: 36px; }
+        }
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.15em;
             color: rgba(255,255,255,0.4);
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .bar-bg {
             background: rgba(255,255,255,0.08);
             border-radius: 100px;
-            height: 6px;
+            height: 5px;
             overflow: hidden;
         }
         .bar-fill {
@@ -295,9 +325,9 @@
             transition: width 1s ease;
         }
         .topic-tag {
-            padding: 6px 16px;
+            padding: 5px 12px;
             border-radius: 100px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             letter-spacing: 0.05em;
             background: rgba(255,255,255,0.06);
@@ -305,6 +335,9 @@
             color: rgba(255,255,255,0.6);
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .topic-tag:hover, .topic-tag.active {
             background: var(--neon);
@@ -319,51 +352,99 @@
             transform: translateY(-4px);
             box-shadow: 0 20px 60px rgba(0,255,159,0.1);
         }
+        .article-card:active { transform: scale(0.98); }
         .search-in {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            padding: 12px 20px;
+            padding: 10px 16px;
             color: #fff;
             font-size: 14px;
             outline: none;
             transition: all 0.3s;
             width: 100%;
+            -webkit-appearance: none;
         }
         .search-in:focus { border-color: var(--neon); box-shadow: 0 0 20px rgba(0,255,159,0.2); }
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(20px);
-            padding: 24px;
+            padding: 16px;
+            overflow-y: auto;
         }
         .modal.active { display: flex; }
         .modal-box {
             background: #0a0a0a;
             border: 1px solid var(--neon);
-            border-radius: 24px;
-            padding: 40px;
+            border-radius: 20px;
+            padding: 28px;
             max-width: 700px;
             width: 100%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 0 80px rgba(0,255,159,0.2);
+            position: relative;
         }
         .close-btn {
-            float: right;
+            position: absolute;
+            top: 16px;
+            right: 20px;
             background: none;
             border: none;
             color: rgba(255,255,255,0.5);
             font-size: 28px;
             cursor: pointer;
             line-height: 1;
+            padding: 4px;
+            z-index: 10;
         }
         .close-btn:hover { color: #fff; }
+
+        /* Mobile-first grid adjustments */
+        .grid-responsive {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 640px) {
+            .grid-responsive { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        }
+        @media (min-width: 1024px) {
+            .grid-responsive { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .flex-wrap-responsive {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Pattern insight box */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(0,255,159,0.08) 0%, rgba(0,0,0,0.3) 100%);
+            border: 1px solid rgba(0,255,159,0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .insight-box h4 {
+            color: var(--neon);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+        }
+        .insight-box p {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -385,9 +466,9 @@
 <nav class="nav">
     <div class="logo">
         <div class="logo-mark">F</div>
-        <span>FP&A Intelligence</span>
+        <span>FP&A Intel</span>
     </div>
-    <div class="flex gap-3">
+    <div class="flex gap-2">
         <button class="nav-btn" onclick="scrollTo('articles')">Articles</button>
         <button class="nav-btn" onclick="scrollTo('analytics')">Analytics</button>
     </div>
@@ -397,10 +478,10 @@
 <section class="hero">
     <h1 class="hero-brand">HELIOS</h1>
     <p class="hero-sub">Designing the operator console for next-generation FP&A intelligence.</p>
-    <p class="hero-desc">An immersive data-driven portal synthesizing the world's most advanced financial planning and analysis trends into actionable strategic foresight. A high-fidelity operator console for the modern CFO.</p>
+    <p class="hero-desc">An immersive data-driven portal synthesizing the world's most advanced financial planning and analysis trends into actionable strategic foresight.</p>
     <button class="cta-main" onclick="scrollTo('articles')">
         Access the Vault
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </button>
 
     <div class="scroll-hint">
@@ -411,72 +492,94 @@
 
 <!-- Stats -->
 <section class="section">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="panel text-center"><div class="stat-num" id="s-issues">-</div><div class="stat-label">Issues</div></div>
-        <div class="panel text-center"><div class="stat-num" id="s-articles">-</div><div class="stat-label">Articles</div></div>
-        <div class="panel text-center"><div class="stat-num" id="s-authors">-</div><div class="stat-label">Authors</div></div>
-        <div class="panel text-center"><div class="stat-num" id="s-webinars">-</div><div class="stat-label">Webinars</div></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div class="panel text-center">
+            <div class="stat-num" id="s-issues">-</div>
+            <div class="stat-label">Issues</div>
+        </div>
+        <div class="panel text-center">
+            <div class="stat-num" id="s-articles">-</div>
+            <div class="stat-label">Articles</div>
+        </div>
+        <div class="panel text-center">
+            <div class="stat-num" id="s-authors">-</div>
+            <div class="stat-label">Authors</div>
+        </div>
+        <div class="panel text-center">
+            <div class="stat-num" id="s-webinars">-</div>
+            <div class="stat-label">Webinars</div>
+        </div>
+    </div>
+</section>
+
+<!-- FP&A Pattern Insights -->
+<section class="section" style="padding-top: 0;">
+    <div class="insight-box">
+        <h4>🔍 Pattern Detection Active</h4>
+        <p id="insight-text">Analyzing 165 articles across 39 issues to surface strategic intelligence for your Miele FP&A work...</p>
     </div>
 </section>
 
 <!-- Analytics -->
 <section class="section" id="analytics">
     <h2 class="section-title">Topic <span>Intelligence</span></h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-12">
         <div class="panel">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">📊 Distribution</h3>
-            <div id="topicBars" class="space-y-4"></div>
+            <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 md:mb-6">📊 Distribution</h3>
+            <div id="topicBars" class="space-y-3"></div>
         </div>
         <div class="panel">
-            <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">📈 AI Momentum</h3>
-            <div id="aiTrend" class="space-y-3"></div>
+            <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 md:mb-6">📈 AI Momentum</h3>
+            <div id="aiTrend" class="space-y-2 md:space-y-3"></div>
         </div>
     </div>
     <div class="panel">
-        <h3 class="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-6">👥 Top Contributors</h3>
-        <div id="authorsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 md:mb-6">👥 Top Contributors</h3>
+        <div id="authorsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"></div>
     </div>
 </section>
 
 <!-- Articles -->
 <section class="section" id="articles">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+    <div class="flex flex-col gap-4 mb-8">
         <div>
             <h2 class="section-title mb-0">Article <span>Vault</span></h2>
-            <p class="text-sm text-gray-500 mt-1" id="countLabel">Loading...</p>
+            <p class="text-xs text-gray-500 mt-1" id="countLabel">Loading...</p>
         </div>
-        <div class="flex gap-3 w-full md:w-auto">
-            <input type="text" id="search" class="search-in" placeholder="Search...">
-            <select id="authorSel" class="search-in" style="width:auto;min-width:160px"><option value="">All Authors</option></select>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="search" class="search-in" placeholder="Search articles...">
+            <select id="authorSel" class="search-in" style="min-width: 140px; width: auto;">
+                <option value="">All Authors</option>
+            </select>
         </div>
     </div>
 
-    <div class="flex gap-2 flex-wrap mb-8">
+    <div class="flex-wrap-responsive mb-6">
         <button class="topic-tag active" data-t="">All</button>
         <button class="topic-tag" data-t="ai">AI & Automation</button>
         <button class="topic-tag" data-t="cash">Cash Flow</button>
         <button class="topic-tag" data-t="forecast">Forecasting</button>
-        <button class="topic-tag" data-t="data">Data & Governance</button>
-        <button class="topic-tag" data-t="transform">Transformation</button>
+        <button class="topic-tag" data-t="data">Data & Gov</button>
+        <button class="topic-tag" data-t="transform">Transform</button>
     </div>
 
-    <div id="articleGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div id="articleGrid" class="grid-responsive"></div>
 </section>
 
 <!-- Webinars -->
 <section class="section" id="webinars">
     <h2 class="section-title">Upcoming <span>Webinars</span></h2>
-    <div id="webinarGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="webinarGrid"></div>
 </section>
 
 <!-- Footer -->
-<footer class="relative z-10 py-12 border-t border-white/5">
-    <div class="max-w-6xl mx-auto px-10 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-            <div class="logo-mark">F</div>
-            <span class="font-bold text-sm">FP&A Intelligence</span>
+<footer class="relative z-10 py-8 md:py-12 border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-3">
+        <div class="flex items-center gap-2">
+            <div class="logo-mark" style="width:20px;height:20px;font-size:9px;">F</div>
+            <span class="font-bold text-xs md:text-sm">FP&A Intelligence</span>
         </div>
-        <p class="text-xs text-white/30">© 2026 — Nova Intelligence Systems</p>
+        <p class="text-xs text-white/30">© 2026 — Nova Intelligence</p>
     </div>
 </footer>
 
@@ -515,8 +618,7 @@ function initGalaxy() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.getElementById('galaxy').appendChild(renderer.domElement);
 
-    // Galaxy parameters
-    const count = 15000;
+    const count = 12000;
     const arms = 5;
     const armSpread = 0.5;
     const radius = 12;
@@ -526,7 +628,6 @@ function initGalaxy() {
 
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
 
     const colorInside = new THREE.Color('#00FF9F');
     const colorOutside = new THREE.Color('#003322');
@@ -549,8 +650,6 @@ function initGalaxy() {
         colors[i3] = mixedColor.r;
         colors[i3 + 1] = mixedColor.g;
         colors[i3 + 2] = mixedColor.b;
-
-        sizes[i] = Math.random() * 2;
     }
 
     const geometry = new THREE.BufferGeometry();
@@ -558,7 +657,7 @@ function initGalaxy() {
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-        size: 0.08,
+        size: 0.07,
         vertexColors: true,
         transparent: true,
         opacity: 0.8,
@@ -579,13 +678,20 @@ window.addEventListener('mousemove', e => {
     mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
 
+// Touch support for mobile
+window.addEventListener('touchmove', e => {
+    if (e.touches.length > 0) {
+        mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+    }
+}, { passive: true });
+
 function animateGalaxy() {
     requestAnimationFrame(animateGalaxy);
     const time = Date.now() * 0.0003;
     galaxy.rotation.y = time * 0.3;
     galaxy.rotation.z = Math.sin(time * 0.1) * 0.05;
 
-    // Mouse parallax
     camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
     camera.position.y += (4 + mouseY * 1 - camera.position.y) * 0.02;
     camera.lookAt(0, 0, 0);
@@ -612,8 +718,8 @@ function animateHero() {
     gsap.registerPlugin(ScrollTrigger);
     gsap.utils.toArray('.panel').forEach((el, i) => {
         gsap.from(el, {
-            scrollTrigger: { trigger: el, start: 'top 85%' },
-            y: 40, opacity: 0, duration: 0.8, delay: i * 0.1
+            scrollTrigger: { trigger: el, start: 'top 90%' },
+            y: 30, opacity: 0, duration: 0.6, delay: i * 0.05
         });
     });
 }
@@ -634,6 +740,19 @@ function renderAll() {
     document.getElementById('s-authors').textContent = DATA.stats.authors;
     document.getElementById('s-webinars').textContent = DATA.stats.webinars;
 
+    // Insight box with actionable intelligence
+    const aiCount = DATA.topics['AI & Automation'] || 0;
+    const total = DATA.stats.articles;
+    const aiPct = Math.round((aiCount / total) * 100);
+    const maxIssue = Object.entries(DATA.ai_trend).sort((a,b) => b[1]-a[1])[0];
+    document.getElementById('insight-text').innerHTML = `
+        <strong style="color:var(--neon)">${aiPct}%</strong> of all articles mention AI & Automation.
+        AI coverage peaked at <strong>Issue #${maxIssue[0]}</strong> (${maxIssue[1]} articles).
+        <br><br>
+        <em>For your Miele work:</em> Driver-Based Planning is underrepresented (${DATA.topics['Driver-Based Planning'] || 0} articles) — 
+        this could be a strategic differentiation angle for your team.
+    `;
+
     // Topic bars
     const maxT = Math.max(...Object.values(DATA.topics));
     document.getElementById('topicBars').innerHTML = Object.entries(DATA.topics)
@@ -641,9 +760,9 @@ function renderAll() {
         .slice(0,8)
         .map(([t,c]) => `
             <div class="flex items-center gap-3">
-                <span class="text-xs text-gray-400 w-36 truncate">${t}</span>
+                <span class="text-xs text-gray-400 w-28 md:w-36 truncate">${t}</span>
                 <div class="flex-1 bar-bg"><div class="bar-fill" style="width:${(c/maxT)*100}%"></div></div>
-                <span class="text-xs text-emerald-400 font-bold w-8 text-right">${c}</span>
+                <span class="text-xs text-emerald-400 font-bold w-6 text-right">${c}</span>
             </div>
         `).join('');
 
@@ -652,7 +771,7 @@ function renderAll() {
     document.getElementById('aiTrend').innerHTML = Object.entries(DATA.ai_trend)
         .map(([i,c]) => `
             <div class="flex items-center gap-3">
-                <span class="text-xs text-gray-400 w-12">#${i}</span>
+                <span class="text-xs text-gray-400 w-10 md:w-12">#${i}</span>
                 <div class="flex-1 bar-bg"><div class="bar-fill" style="width:${(c/Math.max(maxA,1))*100}%"></div></div>
                 <span class="text-xs text-emerald-400 font-bold w-6 text-right">${c}</span>
             </div>
@@ -661,8 +780,8 @@ function renderAll() {
     // Authors
     document.getElementById('authorsGrid').innerHTML = DATA.authors.slice(0,8).map(a => `
         <div class="panel text-center cursor-pointer hover:border-emerald-400" onclick="filterAuthor('${a.name}')">
-            <div class="text-2xl font-black text-emerald-400">${a.count}</div>
-            <div class="text-xs text-gray-400 mt-1">${a.name}</div>
+            <div class="text-xl md:text-2xl font-black text-emerald-400">${a.count}</div>
+            <div class="text-xs text-gray-400 mt-1 truncate">${a.name}</div>
         </div>
     `).join('');
 
@@ -680,9 +799,9 @@ function renderAll() {
     document.getElementById('webinarGrid').innerHTML = DATA.webinars.slice(0,4).map(w => `
         <div class="panel">
             <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">${w.date} | Issue #${w.issue_number}</div>
-            <h4 class="font-bold mb-2">${w.title}</h4>
-            <p class="text-sm text-gray-400 mb-3">${w.description ? w.description.substring(0,120)+'...' : ''}</p>
-            ${w.url ? `<a href="${w.url}" target="_blank" class="text-emerald-400 text-sm hover:underline">Register →</a>` : ''}
+            <h4 class="font-bold mb-2 text-sm md:text-base">${w.title}</h4>
+            <p class="text-xs md:text-sm text-gray-400 mb-3">${w.description ? w.description.substring(0,100)+'...' : ''}</p>
+            ${w.url ? `<a href="${w.url}" target="_blank" class="text-emerald-400 text-xs md:text-sm hover:underline">Register →</a>` : ''}
         </div>
     `).join('');
 
@@ -701,13 +820,13 @@ function renderAll() {
 
 function renderArticles(list) {
     const g = document.getElementById('articleGrid');
-    document.getElementById('countLabel').textContent = `${list.length} articles`;
+    document.getElementById('countLabel').textContent = `${list.length} articles found`;
     g.innerHTML = list.slice(0,12).map(a => `
         <div class="article-card panel" onclick="showModal(${a.id})">
             <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
-            <h3 class="font-bold mb-2">${a.title}</h3>
+            <h3 class="font-bold mb-2 text-sm md:text-base line-clamp-2">${a.title}</h3>
             <p class="text-xs text-gray-400">${a.author||'Unknown'} ${a.author_title?`— ${a.author_title}`:''}</p>
-            <p class="text-sm text-gray-500 mt-2 line-clamp-2">${a.summary?a.summary.substring(0,140)+'...':''}</p>
+            <p class="text-xs md:text-sm text-gray-500 mt-2 line-clamp-2">${a.summary?a.summary.substring(0,120)+'...':''}</p>
         </div>
     `).join('');
 }
@@ -737,16 +856,21 @@ function showModal(id) {
     if (!a) return;
     document.getElementById('modalBody').innerHTML = `
         <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
-        <h2 class="text-2xl font-bold mb-4">${a.title}</h2>
-        <p class="text-gray-400 mb-2"><strong>Author:</strong> ${a.author||'Unknown'} ${a.author_title?`(${a.author_title})`:''}</p>
+        <h2 class="text-lg md:text-2xl font-bold mb-4 pr-8">${a.title}</h2>
+        <p class="text-gray-400 mb-2 text-sm"><strong>Author:</strong> ${a.author||'Unknown'} ${a.author_title?`(${a.author_title})`:''}</p>
+        <p class="text-gray-400 mb-4 text-sm"><strong>Category:</strong> ${a.category||'N/A'}</p>
         <hr class="border-gray-800 my-4">
-        <p class="text-gray-300 leading-relaxed mb-6">${a.summary||'No summary.'}</p>
-        ${a.url?`<a href="${a.url}" target="_blank" class="cta-main inline-block text-sm">Read Full Article →</a>`:''}
+        <p class="text-gray-300 leading-relaxed mb-6 text-sm md:text-base">${a.summary||'No summary available.'}</p>
+        ${a.url?`<a href="${a.url}" target="_blank" class="cta-main inline-block text-xs md:text-sm">Read Full Article →</a>`:''}
     `;
     document.getElementById('modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
-function closeModal() { document.getElementById('modal').classList.remove('active'); }
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
 function scrollTo(id) { document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
 document.getElementById('modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
 
