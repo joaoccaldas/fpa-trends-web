@@ -98,16 +98,14 @@
             transition: opacity 0.3s;
         }
 
-        /* Galaxy Canvas - CRITICAL FIX: pointer-events none so clicks pass through */
+        /* Galaxy Canvas */
         #galaxy {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none !important;
         }
-        #galaxy canvas {
-            pointer-events: none !important;
-        }
+        #galaxy canvas { pointer-events: none !important; }
 
         /* Navigation */
         .nav {
@@ -288,6 +286,7 @@
             border-radius: 16px;
             padding: 20px;
             transition: all 0.3s;
+            position: relative;
         }
         @media (min-width: 768px) {
             .panel { border-radius: 20px; padding: 32px; }
@@ -406,7 +405,7 @@
         }
         .close-btn:hover { color: #fff; }
 
-        /* Mobile-first grid adjustments */
+        /* Mobile-first grids */
         .grid-responsive {
             display: grid;
             grid-template-columns: 1fr;
@@ -418,14 +417,13 @@
         @media (min-width: 1024px) {
             .grid-responsive { grid-template-columns: repeat(3, 1fr); }
         }
-
         .flex-wrap-responsive {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
         }
 
-        /* Pattern insight box */
+        /* Insight box */
         .insight-box {
             background: linear-gradient(135deg, rgba(0,255,159,0.08) 0%, rgba(0,0,0,0.3) 100%);
             border: 1px solid rgba(0,255,159,0.2);
@@ -444,6 +442,71 @@
             color: rgba(255,255,255,0.7);
             font-size: 14px;
             line-height: 1.6;
+        }
+
+        /* Learning mode styles */
+        .bookmark-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            z-index: 5;
+        }
+        .bookmark-btn:hover { border-color: var(--neon); transform: scale(1.1); }
+        .bookmark-btn.saved { background: var(--neon); color: #000; border-color: var(--neon); }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-left: 8px;
+        }
+        .status-toread { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+        .status-reading { background: rgba(0,255,159,0.2); color: var(--neon); }
+        .status-done { background: rgba(0,255,159,0.3); color: #000; }
+
+        .note-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+        }
+        .note-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #fff;
+            font-size: 13px;
+            margin-top: 8px;
+            outline: none;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .note-input:focus { border-color: var(--neon); }
+
+        .learning-section {
+            background: linear-gradient(135deg, rgba(0,255,159,0.05) 0%, rgba(0,0,0,0.2) 100%);
+            border: 1px solid rgba(0,255,159,0.15);
         }
     </style>
 </head>
@@ -469,8 +532,8 @@
         <span>FP&A Intel</span>
     </div>
     <div class="flex gap-2">
-        <button class="nav-btn" onclick="scrollTo('articles')">Articles</button>
-        <button class="nav-btn" onclick="scrollTo('analytics')">Analytics</button>
+        <button class="nav-btn" onclick="scrollTo('my-learning')">My Learning</button>
+        <button class="nav-btn" onclick="scrollTo('articles')">Vault</button>
     </div>
 </nav>
 
@@ -512,11 +575,34 @@
     </div>
 </section>
 
-<!-- FP&A Pattern Insights -->
+<!-- Pattern Insights -->
 <section class="section" style="padding-top: 0;">
     <div class="insight-box">
         <h4>🔍 Pattern Detection Active</h4>
         <p id="insight-text">Analyzing 165 articles across 39 issues to surface strategic intelligence for your Miele FP&A work...</p>
+    </div>
+</section>
+
+<!-- My Learning Section -->
+<section class="section" id="my-learning">
+    <h2 class="section-title">My <span>Learning</span></h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="panel text-center">
+            <div class="stat-num" id="l-saved">0</div>
+            <div class="stat-label">Saved</div>
+        </div>
+        <div class="panel text-center">
+            <div class="stat-num" id="l-reading">0</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+        <div class="panel text-center">
+            <div class="stat-num" id="l-done">0</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+    <div class="learning-section panel" id="saved-articles">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4">📚 Saved for Later</h3>
+        <p class="text-gray-500 text-sm">No articles saved yet. Click the ⭐ on any article card to bookmark it.</p>
     </div>
 </section>
 
@@ -579,11 +665,12 @@
             <div class="logo-mark" style="width:20px;height:20px;font-size:9px;">F</div>
             <span class="font-bold text-xs md:text-sm">FP&A Intelligence</span>
         </div>
-        <p class="text-xs text-white/30">© 2026 — Nova Intelligence</p>
+        <p class="text-xs text-white/30">Private • Local • Encrypted</p>
+        <p class="text-xs text-white/30">Nova Intelligence Systems</p>
     </div>
 </footer>
 
-<!-- Modal -->
+<!-- Article Modal -->
 <div class="modal" id="modal">
     <div class="modal-box">
         <button class="close-btn" onclick="closeModal()">&times;</button>
@@ -592,6 +679,19 @@
 </div>
 
 <script>
+// ===== LOCAL STORAGE =====
+const LS = {
+    get: (k) => JSON.parse(localStorage.getItem('fpa_' + k) || 'null') || {},
+    set: (k, v) => localStorage.setItem('fpa_' + k, JSON.stringify(v)),
+};
+
+function getBookmarks() { return LS.get('bookmarks'); }
+function setBookmarks(b) { LS.set('bookmarks', b); }
+function getNotes() { return LS.get('notes'); }
+function setNotes(n) { LS.set('notes', n); }
+function getStatus() { return LS.get('status'); }
+function setStatus(s) { LS.set('status', s); }
+
 // ===== PASSWORD =====
 const PASS = "Nova2026";
 function checkPass() {
@@ -677,8 +777,6 @@ window.addEventListener('mousemove', e => {
     mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
     mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
-
-// Touch support for mobile
 window.addEventListener('touchmove', e => {
     if (e.touches.length > 0) {
         mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 2;
@@ -731,6 +829,7 @@ async function loadData() {
     const res = await fetch('data.json');
     DATA = await res.json();
     renderAll();
+    renderLearning();
 }
 
 function renderAll() {
@@ -740,7 +839,7 @@ function renderAll() {
     document.getElementById('s-authors').textContent = DATA.stats.authors;
     document.getElementById('s-webinars').textContent = DATA.stats.webinars;
 
-    // Insight box with actionable intelligence
+    // Insight
     const aiCount = DATA.topics['AI & Automation'] || 0;
     const total = DATA.stats.articles;
     const aiPct = Math.round((aiCount / total) * 100);
@@ -749,7 +848,7 @@ function renderAll() {
         <strong style="color:var(--neon)">${aiPct}%</strong> of all articles mention AI & Automation.
         AI coverage peaked at <strong>Issue #${maxIssue[0]}</strong> (${maxIssue[1]} articles).
         <br><br>
-        <em>For your Miele work:</em> Driver-Based Planning is underrepresented (${DATA.topics['Driver-Based Planning'] || 0} articles) — 
+        <em>For your Miele work:</em> Driver-Based Planning is underrepresented (${DATA.topics['Driver-Based Planning'] || 0} articles) —
         this could be a strategic differentiation angle for your team.
     `;
 
@@ -820,15 +919,37 @@ function renderAll() {
 
 function renderArticles(list) {
     const g = document.getElementById('articleGrid');
+    const bookmarks = getBookmarks();
+    const status = getStatus();
+
     document.getElementById('countLabel').textContent = `${list.length} articles found`;
-    g.innerHTML = list.slice(0,12).map(a => `
-        <div class="article-card panel" onclick="showModal(${a.id})">
-            <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
-            <h3 class="font-bold mb-2 text-sm md:text-base line-clamp-2">${a.title}</h3>
+    g.innerHTML = list.slice(0,12).map(a => {
+        const saved = bookmarks[a.id];
+        const st = status[a.id];
+        const stClass = st === 'reading' ? 'status-reading' : st === 'done' ? 'status-done' : 'status-toread';
+        const stText = st === 'reading' ? 'Reading' : st === 'done' ? 'Done' : 'To Read';
+        return `
+        <div class="article-card panel" style="position:relative;" data-id="${a.id}">
+            <button class="bookmark-btn ${saved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleBookmark(${a.id})" title="Save article">
+                ${saved ? '★' : '☆'}
+            </button>
+            <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">
+                Issue #${a.issue_number} — ${a.date}
+                ${st ? `<span class="status-badge ${stClass}">${stText}</span>` : ''}
+            </div>
+            <h3 class="font-bold mb-2 text-sm md:text-base line-clamp-2 pr-8">${a.title}</h3>
             <p class="text-xs text-gray-400">${a.author||'Unknown'} ${a.author_title?`— ${a.author_title}`:''}</p>
             <p class="text-xs md:text-sm text-gray-500 mt-2 line-clamp-2">${a.summary?a.summary.substring(0,120)+'...':''}</p>
         </div>
-    `).join('');
+    `}).join('');
+}
+
+function toggleBookmark(id) {
+    const b = getBookmarks();
+    if (b[id]) delete b[id]; else b[id] = true;
+    setBookmarks(b);
+    filterAll();
+    renderLearning();
 }
 
 function filterAll() {
@@ -854,17 +975,98 @@ function filterAuthor(name) {
 function showModal(id) {
     const a = DATA.articles.find(x => x.id === id);
     if (!a) return;
+    const bookmarks = getBookmarks();
+    const notes = getNotes();
+    const status = getStatus();
+    const saved = bookmarks[id];
+    const note = notes[id] || '';
+    const st = status[id] || '';
+
     document.getElementById('modalBody').innerHTML = `
         <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${a.issue_number} — ${a.date}</div>
         <h2 class="text-lg md:text-2xl font-bold mb-4 pr-8">${a.title}</h2>
         <p class="text-gray-400 mb-2 text-sm"><strong>Author:</strong> ${a.author||'Unknown'} ${a.author_title?`(${a.author_title})`:''}</p>
         <p class="text-gray-400 mb-4 text-sm"><strong>Category:</strong> ${a.category||'N/A'}</p>
+
+        <div class="flex gap-2 mb-4">
+            <button onclick="toggleStatus(${a.id}, 'toread')" class="topic-tag ${st==='toread'?'active':''}">To Read</button>
+            <button onclick="toggleStatus(${a.id}, 'reading')" class="topic-tag ${st==='reading'?'active':''}">Reading</button>
+            <button onclick="toggleStatus(${a.id}, 'done')" class="topic-tag ${st==='done'?'active':''}">Done</button>
+            <button onclick="toggleModalBookmark(${a.id})" class="topic-tag ${saved?'active':''}" style="margin-left:auto;">${saved?'★ Saved':'☆ Save'}</button>
+        </div>
+
         <hr class="border-gray-800 my-4">
         <p class="text-gray-300 leading-relaxed mb-6 text-sm md:text-base">${a.summary||'No summary available.'}</p>
-        ${a.url?`<a href="${a.url}" target="_blank" class="cta-main inline-block text-xs md:text-sm">Read Full Article →</a>`:''}
+
+        <div class="note-box">
+            <strong style="color:var(--neon)">📝 Your Notes</strong>
+            <textarea class="note-input" id="noteInput" placeholder="What stood out? How does this apply to Miele?">${note}</textarea>
+            <button onclick="saveNote(${a.id})" class="cta-main mt-2 text-xs">Save Note</button>
+        </div>
+
+        ${a.url?`<a href="${a.url}" target="_blank" class="cta-main inline-block text-xs md:text-sm mt-4">Read Full Article →</a>`:''}
     `;
     document.getElementById('modal').classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function toggleStatus(id, st) {
+    const s = getStatus();
+    s[id] = st;
+    setStatus(s);
+    showModal(id);
+    renderLearning();
+}
+
+function toggleModalBookmark(id) {
+    toggleBookmark(id);
+    showModal(id);
+}
+
+function saveNote(id) {
+    const n = getNotes();
+    n[id] = document.getElementById('noteInput').value;
+    setNotes(n);
+    const btn = event.target;
+    btn.textContent = 'Saved!';
+    btn.style.background = '#fff';
+    setTimeout(() => { btn.textContent = 'Save Note'; btn.style.background = ''; }, 1500);
+}
+
+function renderLearning() {
+    const bookmarks = getBookmarks();
+    const status = getStatus();
+    const notes = getNotes();
+    const savedIds = Object.keys(bookmarks).map(Number);
+    const reading = Object.entries(status).filter(([k,v]) => v === 'reading').map(([k]) => Number(k));
+    const done = Object.entries(status).filter(([k,v]) => v === 'done').map(([k]) => Number(k));
+
+    document.getElementById('l-saved').textContent = savedIds.length;
+    document.getElementById('l-reading').textContent = reading.length;
+    document.getElementById('l-done').textContent = done.length;
+
+    const savedDiv = document.getElementById('saved-articles');
+    if (savedIds.length === 0) {
+        savedDiv.innerHTML = `
+            <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4">📚 Saved for Later</h3>
+            <p class="text-gray-500 text-sm">No articles saved yet. Click the ⭐ on any article card to bookmark it.</p>
+        `;
+        return;
+    }
+
+    const savedArticles = DATA.articles.filter(a => savedIds.includes(a.id));
+    savedDiv.innerHTML = `
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4">📚 Saved for Later (${savedIds.length})</h3>
+        <div class="grid-responsive">
+            ${savedArticles.map(a => `
+                <div class="panel cursor-pointer" onclick="showModal(${a.id})">
+                    <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1">Issue #${a.issue_number}</div>
+                    <h4 class="font-bold text-sm line-clamp-2">${a.title}</h4>
+                    ${notes[a.id] ? `<p class="text-xs text-gray-500 mt-2 line-clamp-2">📝 ${notes[a.id].substring(0,80)}...</p>` : ''}
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 function closeModal() {
