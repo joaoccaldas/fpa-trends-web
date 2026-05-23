@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-emerald: #00FF9F;
@@ -27,13 +27,19 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--deep-black); }
         ::-webkit-scrollbar-thumb { background: var(--neon-emerald); border-radius: 10px; }
-
         .neon-glow-text {
             text-shadow: 0 0 10px var(--neon-emerald), 0 0 20px var(--dark-emerald);
         }
-        .neon-border {
-            border: 1px solid var(--neon-emerald);
-            box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: var(--neon-emerald);
+            background: rgba(0, 255, 159, 0.05);
         }
         .neon-button {
             background: var(--neon-emerald);
@@ -82,11 +88,69 @@
             visibility: hidden;
             pointer-events: none;
         }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+        .article-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 255, 159, 0.15);
+        }
+        .topic-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(0, 255, 159, 0.15);
+            color: var(--neon-emerald);
+            border: 1px solid var(--neon-emerald);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .topic-tag:hover, .topic-tag.active {
+            background: var(--neon-emerald);
+            color: #000;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 255, 159, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+            border: 1px solid rgba(0, 255, 159, 0.2);
+        }
+        .stat-card:hover {
+            border-color: var(--neon-emerald);
+            box-shadow: 0 0 20px rgba(0, 255, 159, 0.2);
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--neon-emerald);
+            box-shadow: 0 0 15px rgba(0, 255, 159, 0.3);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: #0a0a0a;
+            border: 1px solid var(--neon-emerald);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 255, 159, 0.3);
         }
         .cursor-follower {
             position: fixed;
@@ -101,17 +165,29 @@
             transition: transform 0.1s ease-out;
             opacity: 0.5;
         }
+        .chart-bar {
+            height: 8px;
+            background: linear-gradient(90deg, var(--dark-emerald), var(--neon-emerald));
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .pulse { animation: pulse 2s infinite; }
     </style>
 </head>
-<body>
+<body class="antialiased">
     <div class="cursor-follower" id="cursor"></div>
 
     <!-- Password Gate -->
     <div class="password-gate" id="gate">
         <div class="glass-panel p-10 text-center max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold mb-6 tracking-widest neon-glow-text">ACCESS RESTRICTED</h2>
-            <p class="text-gray-400 mb-8 text-sm">Please enter the operator authorization code to proceed.</p>
-            <input type="password" id="pass-input" class="w-full bg-black border border-gray-700 p-3 rounded-lg text-white text-center focus:border-emerald-400 outline-none transition-all mb-6" placeholder="••••••••">
+            <div class="text-5xl mb-6">🔒</div>
+            <h2 class="text-2xl font-bold mb-4 tracking-widest neon-glow-text uppercase">Authorized Access Only</h2>
+            <p class="text-gray-400 mb-8 text-sm">Enter your operator authorization code to access the FP&A Intelligence Console.</p>
+            <input type="password" id="pass-input" class="w-full bg-black border border-gray-700 p-3 rounded-lg text-white text-center focus:border-emerald-400 outline-none transition-all mb-6 text-lg tracking-widest" placeholder="••••••••" autofocus>
             <button onclick="verifyPass()" class="neon-button w-full py-3 rounded-lg font-bold uppercase tracking-widest">Authorize</button>
             <p id="error-msg" class="text-red-500 mt-4 text-xs opacity-0 transition-opacity">Invalid Authorization Code</p>
         </div>
@@ -120,77 +196,171 @@
     <div id="canvas-container"></div>
 
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center">
-        <div class="text-xl font-black tracking-tighter neon-glow-text">FPA <span class="text-white">INTELLIGENCE</span></div>
-        <button class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">View our work</button>
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center backdrop-blur-sm bg-black/20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center text-black font-black text-xs">F</div>
+            <div class="text-xl font-black tracking-tighter neon-glow-text">FPA <span class="text-white">INTELLIGENCE</span></div>
+        </div>
+        <div class="flex gap-4">
+            <a href="#articles" class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Articles</a>
+            <a href="#analytics" class="outline-button px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Analytics</a>
+        </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="relative h-screen w-full flex flex-col items-center justify-center text-center px-6">
-        <div class="max-w-5xl">
-            <h1 id="main-title" class="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-6 neon-glow-text italic">
-                FP&A TRENDS<br><span class="text-white not-italic">INTELLIGENCE</span>
+        <div class="max-w-5xl z-10">
+            <div class="mb-8 inline-block px-4 py-2 rounded-full border border-emerald-400/30 bg-emerald-400/10">
+                <span class="text-emerald-400 text-xs font-bold tracking-widest uppercase">🟢 System Online — 165 Articles Analyzed</span>
+            </div>
+
+            <h1 id="main-title" class="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-6 italic">
+                <span class="text-white">THE FUTURE OF</span><br>
+                <span class="neon-glow-text">STRATEGIC FINANCE</span>
             </h1>
-            <p id="subtitle" class="text-lg md:text-xl font-light text-gray-300 mb-8 tracking-wide opacity-0 translate-y-4 transition-all duration-1000">
-                Decoding the future of strategic finance through agentic intelligence.
+
+            <p id="subtitle" class="text-lg md:text-xl font-light text-gray-300 mb-8 tracking-wide max-w-2xl mx-auto opacity-0">
+                An agentic intelligence portal synthesizing the world's most advanced FP&A trends into actionable foresight.
             </p>
-            <p id="desc" class="max-w-2xl mx-auto text-gray-500 font-light text-sm md:text-base mb-12 opacity-0 translate-y-4 transition-all duration-1000">
-                An immersive data-driven portal synthesizing the world's most advanced financial planning and analysis trends into actionable strategic foresight. A high-fidelity operator console for the modern CFO.
-            </p>
-            
-            <div class="flex flex-col items-center gap-8">
-                <button class="neon-button px-10 py-4 rounded-full font-black uppercase tracking-widest text-sm flex items-center gap-3">
+
+            <div id="hero-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12 opacity-0">
+                <div class="stat-card glass-panel p-4 rounded-xl">
+                    <div class="text-3xl font-black text-emerald-400" id="stat-issues">-</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-widest">Issues</div>
+                </div>
+                <div class="stat-card glass-panel p-4 rounded-xl">
+                    <div class="text-3xl font-black text-emerald-400" id="stat-articles">-</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-widest">Articles</div>
+                </div>
+                <div class="stat-card glass-panel p-4 rounded-xl">
+                    <div class="text-3xl font-black text-emerald-400" id="stat-authors">-</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-widest">Authors</div>
+                </div>
+                <div class="stat-card glass-panel p-4 rounded-xl">
+                    <div class="text-3xl font-black text-emerald-400" id="stat-webinars">-</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-widest">Webinars</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4 justify-center">
+                <button onclick="document.getElementById('articles').scrollIntoView({behavior: 'smooth'})" class="neon-button px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm flex items-center gap-3">
                     Access the Vault <span class="text-lg">→</span>
+                </button>
+                <button onclick="document.getElementById('analytics').scrollIntoView({behavior: 'smooth'})" class="outline-button px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm">
+                    View Analytics
                 </button>
             </div>
         </div>
 
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 animate-bounce">Scroll to Enter</p>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gray-500 pulse">Scroll to Enter</p>
             <div class="w-px h-12 bg-gradient-to-b from-emerald-400 to-transparent mx-auto mt-2"></div>
         </div>
     </section>
 
-    <!-- Content Section (Example) -->
-    <section class="min-h-screen relative z-10 px-8 py-24">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-            <div class="space-y-8">
-                <h2 class="text-4xl font-bold tracking-tight">The New <span class="text-emerald-400">Operator Console</span></h2>
-                <p class="text-gray-400 leading-relaxed font-light">
-                    We are moving beyond spreadsheets and static reports. The future of FP&A is a live, agentic ecosystem that doesn't just report data, but interprets it in real-time, projecting future states with surgical precision.
-                </p>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-panel p-6">
-                        <div class="text-emerald-400 font-bold text-2xl mb-2">165+</div>
-                        <div class="text-xs text-gray-500 uppercase tracking-widest">Synthesized Articles</div>
+    <!-- Analytics Section -->
+    <section id="analytics" class="relative z-10 px-8 py-24">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold mb-12 text-center">Topic <span class="text-emerald-400">Intelligence</span></h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                <div class="glass-panel p-8">
+                    <h3 class="text-xl font-bold mb-6 text-emerald-400">📊 Topic Distribution</h3>
+                    <div id="topic-bars" class="space-y-4">
+                        <!-- Filled by JS -->
                     </div>
-                    <div class="glass-panel p-6">
-                        <div class="text-emerald-400 font-bold text-2xl mb-2">39</div>
-                        <div class="text-xs text-gray-500 uppercase tracking-widest">Analyzed Issues</div>
+                </div>
+
+                <div class="glass-panel p-8">
+                    <h3 class="text-xl font-bold mb-6 text-emerald-400">📈 AI Trend (Recent Issues)</h3>
+                    <div id="ai-trend-chart" class="space-y-3">
+                        <!-- Filled by JS -->
                     </div>
                 </div>
             </div>
-            <div class="relative group">
-                <div class="absolute -inset-4 bg-emerald-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="glass-panel aspect-square flex items-center justify-center relative overflow-hidden">
-                    <div class="text-emerald-400 text-6xl font-black opacity-20 absolute">DATA</div>
-                    <div class="z-10 text-center p-12">
-                        <p class="text-sm font-mono text-emerald-400 mb-4">[SYSTEM_ACTIVE]</p>
-                        <p class="text-white italic font-light">"The goal is no longer to predict the future, but to design the systems that make the future predictable."</p>
-                    </div>
+
+            <div class="glass-panel p-8">
+                <h3 class="text-xl font-bold mb-6 text-emerald-400">👥 Top Contributors</h3>
+                <div id="authors-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Filled by JS -->
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Articles Section -->
+    <section id="articles" class="relative z-10 px-8 py-24">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+                <div>
+                    <h2 class="text-4xl font-bold mb-2">Article <span class="text-emerald-400">Vault</span></h2>
+                    <p class="text-gray-400" id="article-count">Loading...</p>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <input type="text" id="search" class="search-input px-4 py-3 rounded-lg w-full md:w-64" placeholder="Search articles...">
+                    <select id="author-filter" class="search-input px-4 py-3 rounded-lg">
+                        <option value="">All Authors</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2 flex-wrap mb-8">
+                <button class="topic-tag active" data-topic="">All</button>
+                <button class="topic-tag" data-topic="ai">AI & Automation</button>
+                <button class="topic-tag" data-topic="cash">Cash Flow</button>
+                <button class="topic-tag" data-topic="forecast">Forecasting</button>
+                <button class="topic-tag" data-topic="data">Data & Governance</button>
+                <button class="topic-tag" data-topic="transform">Transformation</button>
+            </div>
+
+            <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Webinars Section -->
+    <section id="webinars" class="relative z-10 px-8 py-24">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold mb-12 text-center">Upcoming <span class="text-emerald-400">Webinars</span></h2>
+            <div id="webinars-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 px-8 py-12 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-emerald-400 rounded-full flex items-center justify-center text-black font-black text-xs">F</div>
+                <div class="font-bold">FP&A Trends Intelligence</div>
+            </div>
+            <div class="text-gray-500 text-sm">© 2026 — Powered by Nova Intelligence Systems</div>
+            <div class="text-gray-500 text-sm">39 Issues • 165 Articles • 76 Authors</div>
+        </div>
+    </footer>
+
+    <!-- Article Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <button onclick="closeModal()" class="float-right text-gray-500 hover:text-white text-2xl">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <script>
-        // --- SECURITY GATE ---
-        const CORRECT_PASS = "Nova2026"; // Change this to your desired password
+        // ===== PASSWORD PROTECTION =====
+        const CORRECT_PASS = "Nova2026";
+        let data = null;
+        let currentTopic = '';
+
         function verifyPass() {
             const input = document.getElementById('pass-input').value;
             const msg = document.getElementById('error-msg');
             if (input === CORRECT_PASS) {
                 document.getElementById('gate').classList.add('hidden');
+                loadData();
                 initAnimations();
             } else {
                 msg.style.opacity = '1';
@@ -198,9 +368,194 @@
             }
         }
 
-        // --- THREE.JS VORTEX ---
-        let scene, camera, renderer, particles, particleSystem;
-        const PARTICLE_COUNT = 8000;
+        // Enter key
+        document.getElementById('pass-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') verifyPass();
+        });
+
+        // ===== DATA LOADING =====
+        async function loadData() {
+            try {
+                const res = await fetch('data.json');
+                data = await res.json();
+                renderDashboard();
+            } catch (e) {
+                console.error('Failed to load data:', e);
+                document.getElementById('articles-grid').innerHTML = '<div class="text-red-400">Failed to load data. Please check data.json file.</div>';
+            }
+        }
+
+        function renderDashboard() {
+            if (!data) return;
+
+            // Stats
+            document.getElementById('stat-issues').textContent = data.stats.issues;
+            document.getElementById('stat-articles').textContent = data.stats.articles;
+            document.getElementById('stat-authors').textContent = data.stats.authors;
+            document.getElementById('stat-webinars').textContent = data.stats.webinars;
+
+            // Topic bars
+            const topicsDiv = document.getElementById('topic-bars');
+            const maxTopic = Math.max(...Object.values(data.topics));
+            topicsDiv.innerHTML = Object.entries(data.topics)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([topic, count]) => `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-gray-400 w-32 truncate">${topic}</span>
+                        <div class="flex-1 bg-gray-800 rounded-full h-2">
+                            <div class="chart-bar" style="width: ${(count/maxTopic)*100}%"></div>
+                        </div>
+                        <span class="text-xs text-emerald-400 font-bold">${count}</span>
+                    </div>
+                `).join('');
+
+            // AI trend
+            const trendDiv = document.getElementById('ai-trend-chart');
+            const maxTrend = Math.max(...Object.values(data.ai_trend));
+            trendDiv.innerHTML = Object.entries(data.ai_trend)
+                .map(([issue, count]) => `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-gray-400 w-16">#${issue}</span>
+                        <div class="flex-1 bg-gray-800 rounded-full h-2">
+                            <div class="chart-bar" style="width: ${(count/Math.max(maxTrend,1))*100}%"></div>
+                        </div>
+                        <span class="text-xs text-emerald-400 font-bold">${count}</span>
+                    </div>
+                `).join('');
+
+            // Authors
+            const authorsDiv = document.getElementById('authors-grid');
+            authorsDiv.innerHTML = data.authors.slice(0, 8).map(author => `
+                <div class="glass-panel p-4 text-center cursor-pointer hover:border-emerald-400" onclick="filterByAuthor('${author.name}')">
+                    <div class="text-xl font-black text-emerald-400">${author.count}</div>
+                    <div class="text-xs text-gray-400 mt-1">${author.name}</div>
+                </div>
+            `).join('');
+
+            // Author filter options
+            const authorFilter = document.getElementById('author-filter');
+            data.authors.forEach(author => {
+                const opt = document.createElement('option');
+                opt.value = author.name;
+                opt.textContent = `${author.name} (${author.count})`;
+                authorFilter.appendChild(opt);
+            });
+
+            // Articles
+            renderArticles(data.articles);
+
+            // Webinars
+            const webinarsDiv = document.getElementById('webinars-grid');
+            webinarsDiv.innerHTML = data.webinars.slice(0, 4).map(w => `
+                <div class="glass-panel p-6">
+                    <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">${w.date} | Issue #${w.issue_number}</div>
+                    <h4 class="font-bold mb-2">${w.title}</h4>
+                    <p class="text-sm text-gray-400 mb-4">${w.description ? w.description.substring(0, 120) + '...' : ''}</p>
+                    ${w.url ? `<a href="${w.url}" target="_blank" class="text-emerald-400 text-sm hover:underline">Register →</a>` : ''}
+                </div>
+            `).join('');
+
+            // Search
+            document.getElementById('search').addEventListener('input', filterArticles);
+            document.getElementById('author-filter').addEventListener('change', filterArticles);
+            document.querySelectorAll('.topic-tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    document.querySelectorAll('.topic-tag').forEach(t => t.classList.remove('active'));
+                    tag.classList.add('active');
+                    currentTopic = tag.dataset.topic;
+                    filterArticles();
+                });
+            });
+        }
+
+        function renderArticles(articles) {
+            const grid = document.getElementById('articles-grid');
+            document.getElementById('article-count').textContent = `${articles.length} articles found`;
+
+            if (articles.length === 0) {
+                grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-12">No articles found</div>';
+                return;
+            }
+
+            grid.innerHTML = articles.slice(0, 12).map(article => `
+                <div class="article-card glass-panel p-6" onclick="showArticle(${article.id})">
+                    <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${article.issue_number} — ${article.date}</div>
+                    <h3 class="font-bold mb-2 text-lg">${article.title}</h3>
+                    <p class="text-sm text-gray-400 mb-3">${article.author || 'Unknown'} ${article.author_title ? `— ${article.author_title}` : ''}</p>
+                    <p class="text-sm text-gray-500 line-clamp-3">${article.summary ? article.summary.substring(0, 150) + '...' : ''}</p>
+                    <div class="flex gap-2 mt-4">
+                        ${article.category ? `<span class="text-xs px-2 py-1 rounded bg-gray-800 text-gray-400">${article.category}</span>` : ''}
+                        ${article.url ? `<a href="${article.url}" target="_blank" class="text-emerald-400 text-xs hover:underline ml-auto">Read →</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterArticles() {
+            if (!data) return;
+            const search = document.getElementById('search').value.toLowerCase();
+            const author = document.getElementById('author-filter').value;
+
+            let filtered = data.articles;
+
+            if (search) {
+                filtered = filtered.filter(a =>
+                    (a.title + ' ' + (a.summary || '') + ' ' + (a.author || '')).toLowerCase().includes(search)
+                );
+            }
+
+            if (author) {
+                filtered = filtered.filter(a => a.author === author);
+            }
+
+            if (currentTopic) {
+                const keywords = {
+                    'ai': ['ai', 'artificial intelligence', 'agentic', 'machine learning', 'automation'],
+                    'cash': ['cash', 'treasury', 'liquidity', 'working capital'],
+                    'forecast': ['forecast', 'forecasting', 'prediction', 'scenario'],
+                    'data': ['data', 'governance', 'framework', 'control'],
+                    'transform': ['transformation', 'change', 'agility', 'digital']
+                };
+                const kws = keywords[currentTopic] || [];
+                filtered = filtered.filter(a => {
+                    const text = (a.title + ' ' + (a.summary || '')).toLowerCase();
+                    return kws.some(kw => text.includes(kw));
+                });
+            }
+
+            renderArticles(filtered);
+        }
+
+        function filterByAuthor(name) {
+            document.getElementById('author-filter').value = name;
+            filterArticles();
+            document.getElementById('articles').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showArticle(id) {
+            const article = data.articles.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Issue #${article.issue_number} — ${article.date}</div>
+                <h2 class="text-2xl font-bold mb-4">${article.title}</h2>
+                <p class="text-gray-400 mb-4"><strong>Author:</strong> ${article.author || 'Unknown'} ${article.author_title ? `(${article.author_title})` : ''}</p>
+                <p class="text-gray-400 mb-4"><strong>Category:</strong> ${article.category || 'N/A'}</p>
+                <hr class="border-gray-800 mb-4">
+                <p class="text-gray-300 leading-relaxed mb-6">${article.summary || 'No summary available.'}</p>
+                ${article.url ? `<a href="${article.url}" target="_blank" class="neon-button px-6 py-3 rounded-lg font-bold inline-block">Read Full Article →</a>` : ''}
+            `;
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // ===== THREE.JS VORTEX =====
+        let scene, camera, renderer, particleSystem;
 
         function initThree() {
             scene = new THREE.Scene();
@@ -210,12 +565,10 @@
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(PARTICLE_COUNT * 3);
-            const colors = new Float32Array(PARTICLE_COUNT * 3);
-            const sizes = new Float32Array(PARTICLE_COUNT);
+            const positions = new Float32Array(8000 * 3);
+            const colors = new Float32Array(8000 * 3);
 
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                // Spiral/Vortex Distribution
+            for (let i = 0; i < 8000; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = Math.random() * 10 + 2;
                 const x = Math.cos(angle) * radius;
@@ -226,14 +579,11 @@
                 positions[i * 3 + 1] = y;
                 positions[i * 3 + 2] = z;
 
-                // Emerald glow palette
                 const color = new THREE.Color();
                 color.setHSL(0.45, 0.8, 0.5 + Math.random() * 0.3);
                 colors[i * 3] = color.r;
                 colors[i * 3 + 1] = color.g;
                 colors[i * 3 + 2] = color.b;
-
-                sizes[i] = Math.random() * 2;
             }
 
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -249,22 +599,16 @@
 
             particleSystem = new THREE.Points(geometry, material);
             scene.add(particleSystem);
-
             camera.position.z = 15;
             camera.position.y = 2;
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            
-            // Hypnotic Vortex Rotation
             particleSystem.rotation.y += 0.002;
             particleSystem.rotation.z += 0.001;
-
-            // Subtle pulse
             const time = Date.now() * 0.001;
             particleSystem.scale.setScalar(1 + Math.sin(time) * 0.05);
-
             renderer.render(scene, camera);
         }
 
@@ -274,49 +618,34 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Interaction: Parallax movement
         window.addEventListener('mousemove', (e) => {
             const x = (e.clientX / window.innerWidth) - 0.5;
             const y = (e.clientY / window.innerHeight) - 0.5;
-            gsap.to(camera.position, {
-                x: x * 2,
-                y: 2 - (y * 2),
-                duration: 1,
-                ease: 'power2.out'
-            });
+            gsap.to(camera.position, { x: x * 2, y: 2 - (y * 2), duration: 1, ease: 'power2.out' });
         });
 
-        // --- GSAP ANIMATIONS ---
+        // ===== GSAP ANIMATIONS =====
         function initAnimations() {
-            gsap.to('#subtitle', { opacity: 1, y: 0, duration: 1, delay: 0.5 });
-            gsap.to('#desc', { opacity: 1, y: 0, duration: 1, delay: 0.8 });
+            gsap.to('#subtitle', { opacity: 1, duration: 1, delay: 0.5 });
+            gsap.to('#hero-stats', { opacity: 1, y: 0, duration: 1, delay: 0.8 });
             gsap.from('#main-title', { scale: 0.9, opacity: 0, duration: 1.5, ease: 'expo.out' });
 
             gsap.registerPlugin(ScrollTrigger);
-            gsap.to('.glass-panel', {
-                scrollTrigger: {
-                    trigger: '.glass-panel',
-                    start: 'top 80%',
-                },
-                opacity: 1,
-                y: 0,
-                duration: 1,
-                stagger: 0.2
+            gsap.utils.toArray('.glass-panel').forEach((panel, i) => {
+                gsap.from(panel, {
+                    scrollTrigger: { trigger: panel, start: 'top 85%' },
+                    y: 50, opacity: 0, duration: 0.8, delay: i * 0.1
+                });
             });
         }
 
-        // --- CURSOR FOLLOWER ---
+        // ===== CURSOR FOLLOWER =====
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', (e) => {
-            gsap.to(cursor, {
-                x: e.clientX - 10,
-                y: e.clientY - 10,
-                duration: 0.2,
-                ease: 'power2.out'
-            });
+            gsap.to(cursor, { x: e.clientX - 10, y: e.clientY - 10, duration: 0.2, ease: 'power2.out' });
         });
 
-        // Start
+        // ===== INIT =====
         initThree();
         animate();
     </script>
