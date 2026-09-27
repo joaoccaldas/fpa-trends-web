@@ -109,11 +109,10 @@
     <!-- Password Gate -->
     <div class="password-gate" id="gate">
         <div class="glass-panel p-10 text-center max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold mb-6 tracking-widest neon-glow-text">ACCESS RESTRICTED</h2>
-            <p class="text-gray-400 mb-8 text-sm">Please enter the operator authorization code to proceed.</p>
-            <input type="password" id="pass-input" class="w-full bg-black border border-gray-700 p-3 rounded-lg text-white text-center focus:border-emerald-400 outline-none transition-all mb-6" placeholder="••••••••">
-            <button onclick="verifyPass()" class="neon-button w-full py-3 rounded-lg font-bold uppercase tracking-widest">Authorize</button>
-            <p id="error-msg" class="text-red-500 mt-4 text-xs opacity-0 transition-opacity">Invalid Authorization Code</p>
+            <h2 class="text-2xl font-bold mb-6 tracking-widest neon-glow-text">FP&A LAB</h2>
+            <p class="text-gray-400 mb-8 text-sm">Public interactive prototype using synthetic/demo content. No client-side password can secure a public static site.</p>
+            <p class="text-gray-300 text-sm mb-6">Explore the public demo and its interaction/visual design.</p>
+            <button onclick="enterDemo()" class="neon-button w-full py-3 rounded-lg font-bold uppercase tracking-widest">Enter Demo</button>
         </div>
     </div>
 
@@ -184,18 +183,10 @@
     </section>
 
     <script>
-        // --- SECURITY GATE ---
-        const CORRECT_PASS = "Nova2026"; // Change this to your desired password
-        function verifyPass() {
-            const input = document.getElementById('pass-input').value;
-            const msg = document.getElementById('error-msg');
-            if (input === CORRECT_PASS) {
-                document.getElementById('gate').classList.add('hidden');
-                initAnimations();
-            } else {
-                msg.style.opacity = '1';
-                setTimeout(() => msg.style.opacity = '0', 2000);
-            }
+        // --- PUBLIC DEMO ENTRY ---
+        function enterDemo() {
+            document.getElementById('gate').classList.add('hidden');
+            initAnimations();
         }
 
         // --- THREE.JS VORTEX ---
